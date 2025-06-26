@@ -272,23 +272,65 @@ body:has(.admin-container) {
     font-weight: 400;
 }
 
-/* Admin Header */
+/* Admin Header Layout */
 .admin-container .header {
     background: white;
     box-shadow: 0 2px 10px rgba(0,0,0,0.05);
     animation: none;
     transform: none;
     opacity: 1;
+    padding: 30px 40px;
 }
 
-.admin-container .header h1 {
+.header-content {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    width: 100%;
+}
+
+.header-left h1 {
     color: #2c3e50;
     background: none;
     -webkit-text-fill-color: initial;
+    margin-bottom: 5px;
+    font-size: 2.2rem;
 }
 
-.admin-container .header::before {
-    display: none;
+.header-left p {
+    color: #6c757d;
+    margin: 0;
+    font-size: 1.1rem;
+}
+
+.header-right {
+    display: flex;
+    gap: 12px;
+    align-items: center;
+}
+
+/* Small buttons for header */
+.btn-sm {
+    padding: 8px 16px;
+    font-size: 0.9rem;
+    font-weight: 500;
+    text-transform: none;
+    letter-spacing: normal;
+}
+
+/* Card Header Layout */
+.card-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 25px;
+    padding-bottom: 15px;
+    border-bottom: 2px solid #e9ecef;
+}
+
+.card-header h2 {
+    margin: 0;
+    font-size: 1.6rem;
 }
 
 /* Buttons */
@@ -932,6 +974,33 @@ body:has(.admin-container) {
     
     .header h1 {
         font-size: 2.5rem;
+    }
+    
+    /* Admin header responsive */
+    .admin-container .header {
+        padding: 20px 15px;
+    }
+    
+    .header-content {
+        flex-direction: column;
+        gap: 20px;
+        align-items: flex-start;
+    }
+    
+    .header-left h1 {
+        font-size: 1.8rem;
+    }
+    
+    .header-right {
+        width: 100%;
+        justify-content: flex-end;
+        flex-wrap: wrap;
+    }
+    
+    .card-header {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 15px;
     }
     
     .filters {

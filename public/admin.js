@@ -1,8 +1,8 @@
-// Admin panel functionality with API integration and authentication
+// Admin panel functionality
 let items = [];
 let editingItemId = null;
 
-// Load items when page loads
+// Initialize admin panel
 document.addEventListener('DOMContentLoaded', function() {
     // Mark as admin container for styling
     document.querySelector('.container').classList.add('admin-container');
@@ -12,11 +12,49 @@ document.addEventListener('DOMContentLoaded', function() {
     
     loadItems();
     setupFormHandler();
-    initializeAdminAnimations();
-    setupLogout();
-});
+        initializeAdminAnimations();
+    });
 
-// Check if user is authenticated
+// Show password error in modal
+function showPasswordError(message) {
+    const errorDiv = document.getElementById('passwordError');
+    errorDiv.textContent = message;
+    errorDiv.style.display = 'block';
+};
+
+// Toggle add item form visibility
+function toggleAddForm() {
+    const addCard = document.getElementById('addItemCard');
+    const toggleBtn = document.getElementById('addItemToggle');
+    
+    if (!addCard || !toggleBtn) {
+        console.error('Elements not found:', {addCard, toggleBtn});
+        return;
+    }
+    
+    if (addCard.style.display === 'none' || addCard.style.display === '') {
+        addCard.style.display = 'block';
+        toggleBtn.textContent = '✕ Cancel';
+        toggleBtn.className = 'btn btn-secondary';
+        
+        // Scroll to form
+        addCard.scrollIntoView({ behavior: 'smooth' });
+        
+        // If editing, update button text
+        if (editingItemId) {
+            toggleBtn.textContent = '✕ Cancel Edit';
+        }
+    } else {
+        addCard.style.display = 'none';
+        toggleBtn.textContent = '+ Add New Item';
+        toggleBtn.className = 'btn btn-primary';
+        
+        // Clear form if canceling
+        clearForm();
+    }
+}
+
+// Check authentication
 function checkAuth() {
     const token = localStorage.getItem('adminToken');
     if (!token) {
@@ -43,29 +81,6 @@ function checkAuth() {
     });
 }
 
-// Setup logout functionality
-function setupLogout() {
-    // Add logout button to header if not exists
-    const header = document.querySelector('.header');
-    if (header && !document.getElementById('logoutBtn')) {
-        const logoutBtn = document.createElement('button');
-        logoutBtn.id = 'logoutBtn';
-        logoutBtn.className = 'btn btn-danger';
-        logoutBtn.textContent = 'Logout';
-        logoutBtn.style.marginLeft = '10px';
-        logoutBtn.onclick = logout;
-        header.appendChild(logoutBtn);
-    }
-}
-
-// Logout function
-function logout() {
-    if (confirm('Are you sure you want to logout?')) {
-        localStorage.removeItem('adminToken');
-        window.location.href = '/admin-login';
-    }
-}
-
 // Get auth headers
 function getAuthHeaders() {
     const token = localStorage.getItem('adminToken');
@@ -85,19 +100,19 @@ async function loadItems() {
             }
         });
         
-        if (!response.ok) {
-            throw new Error(`HTTP error! status: ${response.status}`);
+        if (response.ok) {
+            items = await response.json();
+            displayAdminItems();
+        } else {
+            showNotification('Error loading items. Please try again.', 'error');
         }
-        
-        items = await response.json();
-        displayAdminItems();
     } catch (error) {
         console.error('Error loading items:', error);
         showNotification('Error loading items. Please try again.', 'error');
     }
 }
 
-// Initialize admin-specific animations
+// Initialize admin animations
 function initializeAdminAnimations() {
     // Add smooth transitions to form elements
     const formElements = document.querySelectorAll('input, textarea, select');
@@ -118,6 +133,10 @@ function initializeAdminAnimations() {
 function setupFormHandler() {
     document.getElementById('itemForm').addEventListener('submit', async function(e) {
         e.preventDefault();
+        
+        if (!validateForm()) {
+            return;
+        }
         
         const formData = new FormData();
         
@@ -165,8 +184,12 @@ function setupFormHandler() {
             if (response.ok) {
                 showNotification(editingItemId ? 'Item updated successfully!' : 'Item added successfully!', 'success');
                 clearForm();
-                loadItems(); // Reload items to show changes
+                loadItems();
                 editingItemId = null;
+                
+                // Hide the add form after successful submission
+                const addCard = document.getElementById('addItemCard');
+                addCard.style.display = 'none';
             } else {
                 showNotification(result.error || 'Error saving item', 'error');
             }
@@ -177,12 +200,35 @@ function setupFormHandler() {
     });
 }
 
+// Form validation
+function validateForm() {
+    const name = document.getElementById('itemName').value.trim();
+    const price = document.getElementById('itemPrice').value;
+    
+    if (!name) {
+        showNotification('Item name is required', 'error');
+        return false;
+    }
+    
+    if (!price || parseFloat(price) < 0) {
+        showNotification('Valid price is required', 'error');
+        return false;
+    }
+    
+    return true;
+}
+
 // Clear form
 function clearForm() {
     document.getElementById('itemForm').reset();
     document.getElementById('imagePreview').style.display = 'none';
     editingItemId = null;
     document.getElementById('submitBtn').textContent = 'Add Item';
+    
+    // Reset toggle button
+    const toggleBtn = document.getElementById('addItemToggle');
+    toggleBtn.textContent = '+ Add New Item';
+    toggleBtn.className = 'btn btn-primary';
 }
 
 // Preview uploaded image
@@ -205,6 +251,14 @@ function editItem(id) {
     const item = items.find(item => item.id === id);
     if (!item) return;
 
+    // Show the add form
+    const addCard = document.getElementById('addItemCard');
+    const toggleBtn = document.getElementById('addItemToggle');
+    addCard.style.display = 'block';
+    toggleBtn.textContent = '✕ Cancel Edit';
+    toggleBtn.className = 'btn btn-secondary';
+
+    // Fill form with item data
     document.getElementById('itemName').value = item.name;
     document.getElementById('itemPrice').value = item.price;
     document.getElementById('itemCategory').value = item.category;
@@ -228,7 +282,7 @@ function editItem(id) {
     document.getElementById('submitBtn').textContent = 'Update Item';
     
     // Scroll to form
-    document.getElementById('itemForm').scrollIntoView({ behavior: 'smooth' });
+    addCard.scrollIntoView({ behavior: 'smooth' });
 }
 
 // Delete item
@@ -247,7 +301,7 @@ async function deleteItem(id) {
 
         if (response.ok) {
             showNotification('Item deleted successfully!', 'success');
-            loadItems(); // Reload items to show changes
+            loadItems();
         } else {
             showNotification(result.error || 'Error deleting item', 'error');
         }
@@ -275,7 +329,7 @@ async function toggleStatus(id) {
 
         if (response.ok) {
             showNotification(`Item marked as ${newStatus}!`, 'success');
-            loadItems(); // Reload items to show changes
+            loadItems();
         } else {
             showNotification(result.error || 'Error updating item status', 'error');
         }
@@ -316,7 +370,7 @@ function displayAdminItems() {
             <div class="admin-item-info">
                 <div class="admin-item-title">${item.name}</div>
                 <div class="admin-item-details">
-                    <strong>${parseFloat(item.price).toFixed(2)}</strong> • 
+                    <strong>$${parseFloat(item.price).toFixed(2)}</strong> • 
                     <span style="text-transform: capitalize;">${item.category}</span> • 
                     <span class="item-status ${item.status === 'available' ? 'status-available' : 'status-sold'}">
                         ${item.status}
@@ -361,6 +415,197 @@ function formatSpecifications(item) {
 // Filter admin items
 function filterAdminItems() {
     displayAdminItems();
+}
+
+// Logout function
+function logout() {
+    if (confirm('Are you sure you want to logout?')) {
+        localStorage.removeItem('adminToken');
+        window.location.href = '/admin-login';
+    }
+}
+
+// Logout function
+function logout() {
+    if (confirm('Are you sure you want to logout?')) {
+        localStorage.removeItem('adminToken');
+        window.location.href = '/admin-login';
+    }
+}
+
+// Open password change modal
+function openPasswordModal() {
+    document.getElementById('passwordModal').style.display = 'flex';
+    document.getElementById('currentPassword').focus();
+    
+    // Clear any previous errors
+    document.getElementById('passwordError').style.display = 'none';
+    document.getElementById('passwordForm').reset();
+}
+
+// Close password change modal
+function closePasswordModal() {
+    document.getElementById('passwordModal').style.display = 'none';
+    document.getElementById('passwordForm').reset();
+    document.getElementById('passwordError').style.display = 'none';
+}
+
+// Setup password form handler
+document.addEventListener('DOMContentLoaded', function() {
+    // ... existing DOMContentLoaded code ...
+    
+    // Setup password form submission
+    const passwordForm = document.getElementById('passwordForm');
+    if (passwordForm) {
+        passwordForm.addEventListener('submit', async function(e) {
+            e.preventDefault();
+            
+            const currentPassword = document.getElementById('currentPassword').value;
+            const newPassword = document.getElementById('newPassword').value;
+            const confirmPassword = document.getElementById('confirmPassword').value;
+            const errorDiv = document.getElementById('passwordError');
+            const submitBtn = document.getElementById('passwordSubmitBtn');
+            
+            // Hide previous errors
+            errorDiv.style.display = 'none';
+            
+            // Validation
+            if (newPassword.length < 6) {
+                showPasswordError('New password must be at least 6 characters long');
+                return;
+            }
+            
+            if (newPassword !== confirmPassword) {
+                showPasswordError('New passwords do not match');
+                return;
+            }
+            
+            if (currentPassword === newPassword) {
+                showPasswordError('New password must be different from current password');
+                return;
+            }
+            
+            // Show loading state
+            submitBtn.disabled = true;
+            submitBtn.textContent = 'Changing Password...';
+            
+            try {
+                const response = await fetch('/api/admin/change-password', {
+                    method: 'POST',
+                    headers: getAuthHeaders(),
+                    body: JSON.stringify({
+                        currentPassword: currentPassword,
+                        newPassword: newPassword
+                    })
+                });
+                
+                const data = await response.json();
+                
+                if (response.ok) {
+                    showNotification('Password changed successfully!', 'success');
+                    closePasswordModal();
+                } else {
+                    showPasswordError(data.error || 'Error changing password');
+                }
+            } catch (error) {
+                console.error('Error changing password:', error);
+                showPasswordError('Network error. Please try again.');
+            } finally {
+                submitBtn.disabled = false;
+                submitBtn.textContent = 'Change Password';
+            }
+        });
+    }
+    
+    // Close modal when clicking outside
+    document.getElementById('passwordModal').addEventListener('click', function(e) {
+        if (e.target === this) {
+            closePasswordModal();
+        }
+    });
+    
+    // Close modal with Escape key
+    document.addEventListener('keydown', function(e) {
+        if (e.key === 'Escape' && document.getElementById('passwordModal').style.display === 'flex') {
+            closePasswordModal();
+        }
+    });
+});
+
+// Setup password modal functionality
+function setupPasswordModal() {
+    // Setup password form submission
+    const passwordForm = document.getElementById('passwordForm');
+    if (passwordForm) {
+        passwordForm.addEventListener('submit', async function(e) {
+            e.preventDefault();
+            
+            const currentPassword = document.getElementById('currentPassword').value;
+            const newPassword = document.getElementById('newPassword').value;
+            const confirmPassword = document.getElementById('confirmPassword').value;
+            const errorDiv = document.getElementById('passwordError');
+            const submitBtn = document.getElementById('passwordSubmitBtn');
+            
+            // Hide previous errors
+            errorDiv.style.display = 'none';
+            
+            // Validation
+            if (newPassword.length < 6) {
+                showPasswordError('New password must be at least 6 characters long');
+                return;
+            }
+            
+            if (newPassword !== confirmPassword) {
+                showPasswordError('New passwords do not match');
+                return;
+            }
+            
+            if (currentPassword === newPassword) {
+                showPasswordError('New password must be different from current password');
+                return;
+            }
+            
+            // Show loading state
+            submitBtn.disabled = true;
+            submitBtn.textContent = 'Changing Password...';
+            
+            try {
+                const response = await fetch('/api/admin/change-password', {
+                    method: 'POST',
+                    headers: getAuthHeaders(),
+                    body: JSON.stringify({
+                        currentPassword: currentPassword,
+                        newPassword: newPassword
+                    })
+                });
+                
+                const data = await response.json();
+                
+                if (response.ok) {
+                    showNotification('Password changed successfully!', 'success');
+                    closePasswordModal();
+                } else {
+                    showPasswordError(data.error || 'Error changing password');
+                }
+            } catch (error) {
+                console.error('Error changing password:', error);
+                showPasswordError('Network error. Please try again.');
+            } finally {
+                submitBtn.disabled = false;
+                submitBtn.textContent = 'Change Password';
+            }
+        });
+    }
+    
+    // Close modal when clicking outside
+    const passwordModal = document.getElementById('passwordModal');
+    if (passwordModal) {
+        passwordModal.addEventListener('click', function(e) {
+            if (e.target === this) {
+                closePasswordModal();
+            }
+        });
+    }
 }
 
 // Show notification
@@ -412,7 +657,7 @@ function showNotification(message, type = 'info') {
     }, 4000);
 }
 
-// Auto-refresh items every 30 seconds to stay in sync
+// Auto-refresh items every 30 seconds
 setInterval(() => {
     // Only refresh if not currently editing
     if (!editingItemId) {
@@ -420,7 +665,7 @@ setInterval(() => {
     }
 }, 30000);
 
-// Handle network errors gracefully
+// Handle network status
 window.addEventListener('online', () => {
     showNotification('Connection restored. Refreshing data...', 'success');
     loadItems();
@@ -430,7 +675,7 @@ window.addEventListener('offline', () => {
     showNotification('Connection lost. Some features may not work.', 'error');
 });
 
-// Add keyboard shortcuts
+// Keyboard shortcuts
 document.addEventListener('keydown', (e) => {
     // Ctrl/Cmd + S to save form
     if ((e.ctrlKey || e.metaKey) && e.key === 's') {
@@ -441,98 +686,13 @@ document.addEventListener('keydown', (e) => {
         }
     }
     
-    // Escape to clear form
+    // Escape to clear form or close modal
     if (e.key === 'Escape') {
-        clearForm();
-    }
-});
-
-// Handle form validation
-function validateForm() {
-    const name = document.getElementById('itemName').value.trim();
-    const price = document.getElementById('itemPrice').value;
-    
-    if (!name) {
-        showNotification('Item name is required', 'error');
-        return false;
-    }
-    
-    if (!price || parseFloat(price) < 0) {
-        showNotification('Valid price is required', 'error');
-        return false;
-    }
-    
-    return true;
-}
-
-// Enhanced form submission with validation
-document.addEventListener('DOMContentLoaded', function() {
-    const form = document.getElementById('itemForm');
-    if (form) {
-        form.addEventListener('submit', function(e) {
-            if (!validateForm()) {
-                e.preventDefault();
-                return false;
-            }
-        });
-    }
-});
-
-// Password change functionality
-function changePassword() {
-    const currentPassword = prompt('Enter your current password:');
-    if (!currentPassword) return;
-    
-    const newPassword = prompt('Enter your new password (minimum 6 characters):');
-    if (!newPassword || newPassword.length < 6) {
-        showNotification('New password must be at least 6 characters long', 'error');
-        return;
-    }
-    
-    const confirmPassword = prompt('Confirm your new password:');
-    if (newPassword !== confirmPassword) {
-        showNotification('Passwords do not match', 'error');
-        return;
-    }
-    
-    fetch('/api/admin/change-password', {
-        method: 'POST',
-        headers: getAuthHeaders(),
-        body: JSON.stringify({
-            currentPassword: currentPassword,
-            newPassword: newPassword
-        })
-    })
-    .then(response => response.json())
-    .then(data => {
-        if (data.message) {
-            showNotification('Password changed successfully!', 'success');
+        const passwordModal = document.getElementById('passwordModal');
+        if (passwordModal && passwordModal.style.display === 'flex') {
+            closePasswordModal();
         } else {
-            showNotification(data.error || 'Error changing password', 'error');
-        }
-    })
-    .catch(error => {
-        console.error('Error changing password:', error);
-        showNotification('Network error. Please try again.', 'error');
-    });
-}
-
-// Add password change button to header
-document.addEventListener('DOMContentLoaded', function() {
-    const header = document.querySelector('.header');
-    if (header && !document.getElementById('changePasswordBtn')) {
-        const changePasswordBtn = document.createElement('button');
-        changePasswordBtn.id = 'changePasswordBtn';
-        changePasswordBtn.className = 'btn btn-secondary';
-        changePasswordBtn.textContent = 'Change Password';
-        changePasswordBtn.style.marginLeft = '10px';
-        changePasswordBtn.onclick = changePassword;
-        
-        const logoutBtn = document.getElementById('logoutBtn');
-        if (logoutBtn) {
-            header.insertBefore(changePasswordBtn, logoutBtn);
-        } else {
-            header.appendChild(changePasswordBtn);
+            clearForm();
         }
     }
 });
