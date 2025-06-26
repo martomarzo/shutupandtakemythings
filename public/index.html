@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Items for Sale</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <div class="container">
+        <header class="header">
+            <h1>Items for Sale</h1>
+            <p>Quality items at great prices - Contact me to purchase!</p>
+        </header>
+        
+        <div class="filters">
+            <div class="search-box">
+                <input type="text" id="searchInput" placeholder="Search items..." onkeyup="filterItems()">
+            </div>
+            <div class="filter-controls">
+                <select id="categoryFilter" onchange="filterItems()">
+                    <option value="">All Categories</option>
+                    <option value="furniture">Furniture</option>
+                    <option value="electronics">Electronics</option>
+                    <option value="appliances">Appliances</option>
+                    <option value="decor">Home Decor</option>
+                    <option value="other">Other</option>
+                </select>
+                <select id="statusFilter" onchange="filterItems()">
+                    <option value="">All Items</option>
+                    <option value="available">Available Only</option>
+                </select>
+            </div>
+        </div>
+        
+        <div id="itemsGrid" class="items-grid">
+            <!-- Items will be loaded here -->
+        </div>
+        
+        <div id="noItems" class="no-items" style="display: none;">
+            <p>No items available at the moment. Please check back later!</p>
+        </div>
+    </div>
+
+    <script src="public.js"></script>
+</body>
+</html>

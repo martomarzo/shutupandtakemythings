@@ -1,0 +1,129 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin Panel - Item Manager</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <div class="container admin-container">
+        <header class="header">
+            <h1>Admin Panel</h1>
+            <p>Manage your items for sale</p>
+            <div>
+                <a href="/" class="btn btn-secondary">View Public Store</a>
+                <button onclick="changePassword()" class="btn btn-secondary">Change Password</button>
+                <button onclick="logout()" class="btn btn-danger">Logout</button>
+            </div>
+        </header>
+        
+        <div class="admin-section">
+            <div class="card">
+                <h2>Add New Item</h2>
+                <form id="itemForm">
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="itemName">Item Name *</label>
+                            <input type="text" id="itemName" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="itemPrice">Price ($) *</label>
+                            <input type="number" id="itemPrice" step="0.01" min="0" required>
+                        </div>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="itemCategory">Category</label>
+                        <select id="itemCategory">
+                            <option value="furniture">Furniture</option>
+                            <option value="electronics">Electronics</option>
+                            <option value="appliances">Appliances</option>
+                            <option value="decor">Home Decor</option>
+                            <option value="other">Other</option>
+                        </select>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="itemDescription">Description</label>
+                        <textarea id="itemDescription" placeholder="Describe the item's condition, features, etc."></textarea>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label>Dimensions</label>
+                        <div class="dimensions-grid">
+                            <div class="dimension-input">
+                                <label for="itemHeight">Height</label>
+                                <input type="number" id="itemHeight" step="0.1" min="0" placeholder="cm">
+                            </div>
+                            <div class="dimension-input">
+                                <label for="itemLength">Length</label>
+                                <input type="number" id="itemLength" step="0.1" min="0" placeholder="cm">
+                            </div>
+                            <div class="dimension-input">
+                                <label for="itemDepth">Depth</label>
+                                <input type="number" id="itemDepth" step="0.1" min="0" placeholder="cm">
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="itemColor">Color</label>
+                            <input type="text" id="itemColor" placeholder="e.g., White, Black, Oak Wood">
+                        </div>
+                        <div class="form-group">
+                            <label for="itemMaterial">Material</label>
+                            <input type="text" id="itemMaterial" placeholder="e.g., Wood, Metal, Fabric">
+                        </div>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="itemCondition">Condition</label>
+                        <select id="itemCondition">
+                            <option value="excellent">Excellent</option>
+                            <option value="very-good">Very Good</option>
+                            <option value="good">Good</option>
+                            <option value="fair">Fair</option>
+                            <option value="poor">Poor</option>
+                        </select>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="itemNotes">Additional Notes</label>
+                        <textarea id="itemNotes" placeholder="Any additional information about the item..."></textarea>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="itemImage">Upload Photo</label>
+                        <input type="file" id="itemImage" accept="image/*" onchange="previewImage()">
+                        <img id="imagePreview" class="image-preview" style="display: none;">
+                    </div>
+                    
+                    <div class="form-actions">
+                        <button type="submit" class="btn btn-primary" id="submitBtn">Add Item</button>
+                        <button type="button" class="btn btn-secondary" onclick="clearForm()">Clear Form</button>
+                    </div>
+                </form>
+            </div>
+
+            <div class="card">
+                <h2>Manage Items</h2>
+                <div class="admin-filters">
+                    <input type="text" id="adminSearch" placeholder="Search items..." onkeyup="filterAdminItems()">
+                    <select id="adminStatusFilter" onchange="filterAdminItems()">
+                        <option value="">All Status</option>
+                        <option value="available">Available</option>
+                        <option value="sold">Sold</option>
+                    </select>
+                </div>
+                <div id="adminItems" class="admin-items">
+                    <!-- Admin items will be loaded here -->
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="admin.js"></script>
+</body>
+</html>
