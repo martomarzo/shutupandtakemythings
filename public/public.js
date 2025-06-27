@@ -176,6 +176,16 @@ function createItemCard(item, index) {
 
     // Add hover effects
     addCardInteractions(card);
+
+     // Add click listener for image expansion
+    const imageElement = card.querySelector('.item-image img');
+    if (imageElement) {
+        imageElement.addEventListener('click', (event) => {
+            // Stop the click from triggering the card's ripple effect
+            event.stopPropagation(); 
+            openImageModal(item.image_url);
+        });
+    }
     
     return card;
 }
@@ -542,4 +552,54 @@ function triggerEasterEgg() {
             document.body.removeChild(message);
         }, 500);
     }, 3000);
+}
+
+// --- Add these new functions to your script ---
+
+// Get modal elements once
+const imageModal = document.getElementById('imageModal');
+const modalImage = document.getElementById('modalImage');
+const closeModalBtn = document.querySelector('.close-modal');
+
+/**
+ * Opens the modal and displays the clicked image.
+ * @param {string} imageUrl - The URL of the image to display.
+ */
+function openImageModal(imageUrl) {
+    if (imageModal && modalImage) {
+        modalImage.src = imageUrl;
+        imageModal.classList.add('show');
+        // Prevent body from scrolling when modal is open
+        document.body.style.overflow = 'hidden';
+    }
+}
+
+/**
+ * Closes the image modal.
+ */
+function closeImageModal() {
+    if (imageModal) {
+        imageModal.classList.remove('show');
+        // Restore body scrolling
+        document.body.style.overflow = 'auto';
+    }
+}
+
+// Add event listeners to close the modal
+if (imageModal && closeModalBtn) {
+    closeModalBtn.addEventListener('click', closeImageModal);
+    
+    // Also close modal if user clicks on the background
+    imageModal.addEventListener('click', (event) => {
+        if (event.target === imageModal) {
+            closeImageModal();
+        }
+    });
+
+    // Close with the Escape key
+    document.addEventListener('keydown', (e) => {
+        if (e.key === "Escape" && imageModal.classList.contains('show')) {
+            closeImageModal();
+        }
+    });
 }

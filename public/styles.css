@@ -1108,3 +1108,79 @@ body:has(.admin-container) {
         transform: none;
     }
 }
+
+
+/* Image Modal (Lightbox) Styles */
+.modal {
+    display: none; /* Hidden by default */
+    position: fixed; /* Stay in place */
+    z-index: 1000; /* Sit on top */
+    left: 0;
+    top: 0;
+    width: 100%;
+    height: 100%;
+    overflow: auto; /* Enable scroll if needed */
+    background-color: rgba(0, 0, 0, 0.9); /* Black background with opacity */
+    -webkit-backdrop-filter: blur(8px); /* Frosted glass effect for modern browsers */
+    backdrop-filter: blur(8px);
+    opacity: 0;
+    transition: opacity 0.3s ease;
+}
+
+.modal.show {
+    display: block;
+    opacity: 1;
+}
+
+/* Modal Content (The Image) */
+.modal-content {
+    margin: auto;
+    display: block;
+    max-width: 85%;
+    max-height: 85%;
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%) scale(0.9);
+    animation: zoomIn 0.3s cubic-bezier(0.4, 0, 0.2, 1) forwards;
+}
+
+/* Animation for zooming in */
+@keyframes zoomIn {
+    from {
+        transform: translate(-50%, -50%) scale(0.9);
+        opacity: 0;
+    }
+    to {
+        transform: translate(-50%, -50%) scale(1);
+        opacity: 1;
+    }
+}
+
+/* Close Button */
+.close-modal {
+    position: absolute;
+    top: 20px;
+    right: 35px;
+    color: #fff;
+    font-size: 40px;
+    font-weight: bold;
+    transition: 0.3s;
+    cursor: pointer;
+}
+
+.close-modal:hover,
+.close-modal:focus {
+    color: #bbb;
+    text-decoration: none;
+}
+
+/* Make card images clickable */
+.item-card .item-image img {
+    cursor: pointer;
+    transition: transform 0.3s ease;
+}
+
+.item-card .item-image img:hover {
+    transform: scale(1.05); /* Slight zoom on hover to indicate clickability */
+}
