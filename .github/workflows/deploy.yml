@@ -18,4 +18,5 @@ jobs:
         cd /home/shutupandtakemythings # The path to your project on the server
         git pull origin main
         npm install
+        npm start
         # pm2 restart my-app
