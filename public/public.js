@@ -27,8 +27,13 @@ const App = {
         this.loadItems();
         this.runEnhancements();
 
+       if (this.elements.header) {
+             // Use a short timeout to ensure the browser is ready
+            setTimeout(() => {
+                this.elements.header.classList.add('is-visible'); // <-- ADD THIS LINE
+            }, 100);
+        }
         if (this.elements.headerLogo) {
-            // Use a short timeout to ensure the browser is ready
             setTimeout(() => {
                 this.elements.headerLogo.classList.add('animate-in');
             }, 100);
@@ -39,6 +44,7 @@ const App = {
     cacheDOMElements() {
         // Cache all necessary elements to avoid repeated DOM queries
         this.elements = {
+            header: document.querySelector('.header'),
             headerLogo: document.querySelector('.header-logo'),
             itemsGrid: document.getElementById('itemsGrid'),
             noItemsMessage: document.getElementById('noItems'),
