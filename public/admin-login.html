@@ -5,26 +5,31 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Admin Login - Item Manager</title>
     <link rel="stylesheet" href="styles.css">
+    <link rel="icon" type="image/png" href="shutupandtakemymoney.png">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Sora:wght@300;400;600;700&display=swap" rel="stylesheet">
 </head>
 <body>
     <div class="login-container">
         <div class="login-card">
             <div class="login-header">
-                <h1>🔐 Admin Login</h1>
-                <p>Access the item management system</p>
+                <h1>🔐 Admin Panel</h1>
+                <p>Please log in to continue</p>
             </div>
 
-            <div id="errorMessage" class="error-message"></div>
-            <div id="successMessage" class="success-message"></div>
+            <div id="errorMessage" class="message" style="display: none;"></div>
 
             <form id="loginForm">
                 <div class="form-group">
                     <label for="username">Username</label>
+                    <div class="input-icon">👤</div>
                     <input type="text" id="username" name="username" required autocomplete="username">
                 </div>
 
                 <div class="form-group">
                     <label for="password">Password</label>
+                    <div class="input-icon">🔑</div>
                     <input type="password" id="password" name="password" required autocomplete="current-password">
                 </div>
 
@@ -40,104 +45,6 @@
         </div>
     </div>
 
-    <script>
-        document.addEventListener('DOMContentLoaded', function() {
-            const loginForm = document.getElementById('loginForm');
-            const errorMessage = document.getElementById('errorMessage');
-            const successMessage = document.getElementById('successMessage');
-            const loginBtn = document.getElementById('loginBtn');
-            const loadingSpinner = document.getElementById('loadingSpinner');
-            const btnText = document.getElementById('btnText');
-
-            // Check if already logged in
-            checkExistingAuth();
-
-            loginForm.addEventListener('submit', async function(e) {
-                e.preventDefault();
-                
-                const username = document.getElementById('username').value.trim();
-                const password = document.getElementById('password').value;
-
-                if (!username || !password) {
-                    showError('Please enter both username and password');
-                    return;
-                }
-
-                showLoading(true);
-                hideMessages();
-
-                try {
-                    const response = await fetch('/api/auth/login', {
-                        method: 'POST',
-                        headers: {
-                            'Content-Type': 'application/json'
-                        },
-                        body: JSON.stringify({ username, password })
-                    });
-
-                    const data = await response.json();
-
-                    if (response.ok && data.token) {
-                        localStorage.setItem('adminToken', data.token);
-                        showSuccess('Login successful! Redirecting...');
-                        
-                        setTimeout(() => {
-                            window.location.href = '/admin';
-                        }, 1000);
-                    } else {
-                        showError(data.error || 'Login failed');
-                    }
-                } catch (error) {
-                    showError('Network error. Please try again.');
-                } finally {
-                    showLoading(false);
-                }
-            });
-
-            function checkExistingAuth() {
-                const token = localStorage.getItem('adminToken');
-                if (token) {
-                    fetch('/api/admin/items', {
-                        headers: {
-                            'Authorization': `Bearer ${token}`
-                        }
-                    })
-                    .then(response => {
-                        if (response.ok) {
-                            window.location.href = '/admin';
-                        } else {
-                            localStorage.removeItem('adminToken');
-                        }
-                    })
-                    .catch(() => {
-                        localStorage.removeItem('adminToken');
-                    });
-                }
-            }
-
-            function showError(message) {
-                errorMessage.textContent = message;
-                errorMessage.style.display = 'block';
-                successMessage.style.display = 'none';
-            }
-
-            function showSuccess(message) {
-                successMessage.textContent = message;
-                successMessage.style.display = 'block';
-                errorMessage.style.display = 'none';
-            }
-
-            function hideMessages() {
-                errorMessage.style.display = 'none';
-                successMessage.style.display = 'none';
-            }
-
-            function showLoading(loading) {
-                loginBtn.disabled = loading;
-                loadingSpinner.style.display = loading ? 'inline-block' : 'none';
-                btnText.textContent = loading ? 'Logging in...' : 'Login';
-            }
-        });
-    </script>
+    <script src="login.js" defer></script>
 </body>
 </html>
