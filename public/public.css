@@ -1,0 +1,65 @@
+/* public.css - For the Public Store and Login Page */
+
+/* 1. Design System & Variables */
+:root {
+    --color-primary: #E54848; --color-accent: #34A853; --color-text-light: #F7FAFC;
+    --color-text-secondary: #A0AEC0; --color-bg-dark: #1A202C; --color-bg-dark-end: #2D3748;
+    --color-surface-dark: rgba(255, 255, 255, 0.05); --color-border-dark: rgba(255, 255, 255, 0.1);
+    --color-backdrop-bg: rgba(20, 20, 30, 0.6); --font-family-sans: 'Sora', sans-serif;
+    --space-sm: 0.75rem; --space-md: 1.25rem; --space-lg: 1.875rem; --space-xl: 2.5rem;
+    --border-radius-sm: 8px; --border-radius-md: 12px; --border-radius-lg: 20px;
+    --shadow-md: 0 4px 10px rgba(0,0,0,0.05); --shadow-lg: 0 10px 25px rgba(0,0,0,0.1);
+    --shadow-primary: 0 8px 20px -5px hsla(0, 79%, 59%, 0.4); --transition-default: all 0.3s ease;
+}
+
+/* 2. Global & Base Styles */
+* { margin: 0; padding: 0; box-sizing: border-box; }
+body { font-family: var(--font-family-sans); line-height: 1.6; background-color: var(--color-bg-dark); background-image: linear-gradient(160deg, var(--color-bg-dark-end) 0%, var(--color-bg-dark) 100%); color: var(--color-text-secondary); min-height: 100vh; }
+.container { max-width: 1400px; margin: 0 auto; padding: var(--space-md); position: relative; }
+button { cursor: pointer; font-family: inherit; } button:disabled { cursor: not-allowed; opacity: 0.65; }
+
+/* 3. Animations (Keyframes) */
+@keyframes spin { to { transform: rotate(360deg); } }
+@keyframes float { 0%{transform:translateY(100vh) rotate(0deg);opacity:0} 10%{opacity:1} 90%{opacity:1} 100%{transform:translateY(-100px) rotate(360deg);opacity:0} }
+@keyframes bounceIn { from { opacity: 0; transform: scale(0.95); } to { opacity: 1; transform: scale(1); } }
+@keyframes logo-enter { from { opacity: 0; transform: scale(0.8); } to { opacity: 1; transform: scale(1); } }
+@keyframes zoomIn { from { opacity: 0; transform: translate(-50%, -50%) scale(0.9); } to { opacity: 1; transform: translate(-50%, -50%) scale(1); } }
+@keyframes shake { 10%,90%{transform:translate3d(-1px,0,0)} 20%,80%{transform:translate3d(2px,0,0)} 30%,50%,70%{transform:translate3d(-4px,0,0)} 40%,60%{transform:translate3d(4px,0,0)} }
+
+/* 4. Public Store & Login Page Styles */
+.floating-elements { position: fixed; top: 0; left: 0; width: 100%; height: 100%; pointer-events: none; z-index: -1; }
+.floating-element { position: absolute; background: rgba(255, 255, 255, 0.03); border-radius: 50%; animation: float 25s infinite linear; }
+.header { text-align: center; margin-bottom: var(--space-xl); padding: var(--space-xl) var(--space-md); position: relative; z-index: 2; color: var(--color-text-light); opacity: 0; transform: translateY(20px); transition: opacity 0.6s ease, transform 0.6s ease; }
+.header.is-visible { opacity: 1; transform: translateY(0); }
+.header-logo { max-height: 120px; margin-bottom: var(--space-lg); }
+.header-logo.animate-in { animation: logo-enter 1s ease forwards; animation-delay: 0.2s; }
+.header h1 { font-size: 3rem; font-weight: 700; } .header p { font-size: 1.2rem; max-width: 600px; margin: 0 auto; font-weight: 300; }
+.filters { display: flex; gap: var(--space-md); margin-bottom: var(--space-xl); flex-wrap: wrap; align-items: center; }
+.search-box { flex: 1; min-width: 300px; position: relative; }
+.search-box::before { content: '🔍'; position: absolute; left: var(--space-md); top: 50%; transform: translateY(-50%); font-size: 1.1rem; opacity: 0.6; z-index: 1; }
+.filter-controls { display: flex; gap: var(--space-md); flex-wrap: wrap; }
+.filters input, .filters select { padding: var(--space-sm) var(--space-md); border: 1px solid var(--color-border-dark); border-radius: var(--border-radius-md); font-size: 1rem; background: var(--color-surface-dark); backdrop-filter: blur(15px); color: var(--color-text-light); transition: var(--transition-default); box-shadow: var(--shadow-sm); font-family: inherit; }
+.filters select option { background: #333; } .search-box input { width: 100%; padding-left: 3.5rem; } .filters input::placeholder { color: var(--color-text-secondary); }
+.filters input:focus, .filters select:focus { outline: none; border-color: var(--color-primary); box-shadow: 0 0 0 3px hsla(0, 79%, 59%, 0.3); }
+.items-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(360px, 1fr)); gap: var(--space-lg); }
+.item-card { background: var(--color-surface-dark); backdrop-filter: blur(25px); border-radius: var(--border-radius-lg); overflow: hidden; box-shadow: var(--shadow-lg); border: 1px solid var(--color-border-dark); transition: var(--transition-default); position: relative; color: var(--color-text-light); opacity: 0; }
+.item-card.is-visible { animation: bounceIn 0.6s cubic-bezier(0.34, 1.56, 0.64, 1) forwards; }
+.item-card:hover { transform: translateY(-12px); box-shadow: var(--shadow-primary); }
+.item-image { width: 100%; height: 250px; background-color: rgba(0,0,0,0.2); overflow: hidden; }
+.item-image img { width: 100%; height: 100%; object-fit: cover; transition: transform 0.4s ease; cursor: pointer; }
+.item-card:hover .item-image img { transform: scale(1.1); }
+.item-details { padding: var(--space-lg); }
+.item-category { display: inline-block; padding: 6px 16px; background: rgba(255, 255, 255, 0.1); border-radius: 999px; font-size: 0.8rem; font-weight: 600; text-transform: uppercase; margin-bottom: var(--space-sm); }
+.item-title { font-size: 1.5rem; font-weight: 600; line-height: 1.3; color: var(--color-text-light); }
+.item-price { font-size: 2rem; font-weight: 700; color: var(--color-primary); }
+.no-items, .loading-state { text-align: center; padding: var(--space-xxl) var(--space-md); color: var(--color-text-secondary); background: var(--color-surface-dark); border-radius: var(--border-radius-lg); backdrop-filter: blur(10px); border: 1px solid var(--color-border-dark); font-size: 1.2rem; }
+.loading-state::after { content: ''; display: inline-block; width: 25px; height: 25px; border: 3px solid rgba(255, 255, 255, 0.2); border-radius: 50%; border-top-color: var(--color-text-light); animation: spin 1s ease-in-out infinite; margin-left: var(--space-sm); vertical-align: middle; }
+
+
+
+/* Universal Image Modal (For Public Page) */
+#imageModal { display: none; position: fixed; z-index: 2000; left: 0; top: 0; width: 100%; height: 100%; background-color: var(--color-backdrop-bg); backdrop-filter: blur(8px); opacity: 0; transition: opacity 0.3s ease; }
+#imageModal.show { display: flex; align-items: center; justify-content: center; opacity: 1; }
+#imageModal .modal-content { max-width: 90%; max-height: 90%; animation: zoomIn 0.3s ease; }
+#imageModal .close-modal { position: absolute; top: 20px; right: 35px; color: #fff; font-size: 40px; font-weight: bold; transition: 0.3s; cursor: pointer; }
+#imageModal .close-modal:hover { color: #bbb; }
