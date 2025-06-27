@@ -15,7 +15,7 @@ jobs:
 
     - name: Pull and Restart
       run: |
-        cd ~/shutupandtakemythings # The path to your project on the server
+        cd /home/marto/shutupandtakemythings # The path to your project on the server
         git pull origin main
         npm install
         npm start
