@@ -138,6 +138,7 @@ const App = {
                 const itemCard = this.createItemCard(item);
                 itemCard.style.animationDelay = `${index * 80}ms`;
                 this.elements.itemsGrid.appendChild(itemCard);
+                itemCard.classList.add('is-visible')
             });
         }
     },
@@ -212,7 +213,7 @@ const App = {
     // --- ENHANCEMENTS (NON-ESSENTIAL) ---
     runEnhancements() {
         this.createFloatingElements();
-        this.animateSearchPlaceholder();
+        // this.animateSearchPlaceholder();
         this.addEasterEgg();
     },
     
