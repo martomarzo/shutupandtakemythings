@@ -5,20 +5,26 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>SHUT UP AND TAKE MY THINGS</title>
     <link rel="stylesheet" href="styles.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Sora:wght@300;400;600;700&display=swap" rel="stylesheet">
+    <link rel="icon" type="image/png" href="images/shutupandtakemymoney.png">
 </head>
 <body>
     <div class="container">
         <header class="header">
+            <img src="images/shutupandtakemymoney.png" alt="Shut Up and Take My Money Logo" class="header-logo">
+        
             <h1>SHUT UP AND TAKE MY THINGS</h1>
             <p>We are leaving Nuremberg, we are selling everything.</p>
-        </header>
+</header>
         
         <div class="filters">
             <div class="search-box">
-                <input type="text" id="searchInput" placeholder="Search items..." onkeyup="filterItems()">
+                <input type="text" id="searchInput" placeholder="Search items...">
             </div>
             <div class="filter-controls">
-                <select id="categoryFilter" onchange="filterItems()">
+                <select id="categoryFilter">
                     <option value="">All Categories</option>
                     <option value="furniture">Furniture</option>
                     <option value="electronics">Electronics</option>
@@ -26,9 +32,9 @@
                     <option value="decor">Home Decor</option>
                     <option value="other">Other</option>
                 </select>
-                <select id="statusFilter" onchange="filterItems()">
+                <select id="statusFilter">
                     <option value="">All Items</option>
-                    <option value="available">Available Only</option>
+                    <option value="available" selected>Available Only</option>
                 </select>
             </div>
         </div>

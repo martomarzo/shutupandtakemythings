@@ -1,605 +1,336 @@
-// Public store functionality with API integration
-let items = [];
+/**
+ * ===================================================================
+ * SHUT UP AND TAKE MY THINGS - Public Store Application
+ * ===================================================================
+ */
+const App = {
+    // --- STATE ---
+    items: [], // Full list of items from the server
+    elements: {}, // Cached DOM elements for performance
+    searchTimeout: null, // For debouncing search input
 
-// Load items when page loads
-document.addEventListener('DOMContentLoaded', function() {
-    initializePublicStore();
-});
-
-function initializePublicStore() {
-    // Add floating background elements
-    createFloatingElements();
-    
-    // Load and display items from API
-    loadItems();
-    
-    // Initialize scroll animations
-    initializeScrollAnimations();
-    
-    // Add loading effect
-    showLoadingEffect();
-    
-    // Initialize enhanced features
-    addParallaxEffect();
-    animateSearchPlaceholder();
-    optimizeAnimations();
-    addEasterEgg();
-}
-
-// Create floating background elements
-function createFloatingElements() {
-    const floatingContainer = document.createElement('div');
-    floatingContainer.className = 'floating-elements';
-    document.body.appendChild(floatingContainer);
-    
-    // Create floating circles
-    for (let i = 0; i < 6; i++) {
-        const element = document.createElement('div');
-        element.className = 'floating-element';
-        
-        // Random size and position
-        const size = Math.random() * 60 + 20;
-        element.style.width = size + 'px';
-        element.style.height = size + 'px';
-        element.style.left = Math.random() * 100 + '%';
-        element.style.animationDelay = Math.random() * 20 + 's';
-        element.style.animationDuration = (Math.random() * 10 + 15) + 's';
-        
-        floatingContainer.appendChild(element);
-    }
-}
-
-// Load items from API
-async function loadItems() {
-    try {
-        const searchTerm = document.getElementById('searchInput')?.value || '';
-        const categoryFilter = document.getElementById('categoryFilter')?.value || '';
-        const statusFilter = document.getElementById('statusFilter')?.value || '';
-
-        // Build query parameters
-        const params = new URLSearchParams();
-        if (searchTerm) params.append('search', searchTerm);
-        if (categoryFilter) params.append('category', categoryFilter);
-        if (statusFilter) params.append('status', statusFilter);
-
-        const response = await fetch(`/api/items?${params.toString()}`);
-        
-        if (!response.ok) {
-            throw new Error(`HTTP error! status: ${response.status}`);
+    // --- INITIALIZATION ---
+    init() {
+        // The App's entry point. Runs once the DOM is ready.
+        if (document.readyState === 'loading') {
+            document.addEventListener('DOMContentLoaded', () => this.run());
+        } else {
+            this.run();
         }
-        
-        items = await response.json();
-        
-        // Animate items on load after a delay
-        setTimeout(() => {
-            displayItems();
-            animateItemsOnLoad();
-        }, 600);
-        
-    } catch (error) {
-        console.error('Error loading items:', error);
-        showErrorMessage('Unable to load items. Please try again later.');
-    }
-}
+    },
 
-// Show error message
-function showErrorMessage(message) {
-    const container = document.getElementById('itemsGrid');
-    const noItemsMsg = document.getElementById('noItems');
-    
-    container.style.display = 'none';
-    noItemsMsg.innerHTML = `
-        <div style="text-align: center; padding: 60px 20px;">
-            <div style="font-size: 3rem; margin-bottom: 20px;">⚠️</div>
-            <p style="font-size: 1.2rem; color: rgba(255,255,255,0.9); margin-bottom: 20px;">${message}</p>
-            <button onclick="loadItems()" class="btn btn-primary">Try Again</button>
-        </div>
-    `;
-    noItemsMsg.style.display = 'block';
-}
+    run() {
+        console.log('App is running...');
+        this.injectStyles();
+        this.cacheDOMElements();
+        this.bindEventListeners();
+        this.loadItems();
+        this.runEnhancements();
 
-// Show loading effect
-function showLoadingEffect() {
-    const container = document.getElementById('itemsGrid');
-    container.innerHTML = '<div class="loading">Loading amazing items...</div>';
-}
-
-// Display items in the public store with animations
-function displayItems() {
-    const container = document.getElementById('itemsGrid');
-    const noItemsMsg = document.getElementById('noItems');
-
-    // Clear existing content
-    container.innerHTML = '';
-
-    // Filter to show only available items by default
-    const filteredItems = items.filter(item => {
-        const statusFilter = document.getElementById('statusFilter')?.value || '';
-        if (!statusFilter) {
-            return item.status === 'available';
+        if (this.elements.headerLogo) {
+            // Use a short timeout to ensure the browser is ready
+            setTimeout(() => {
+                this.elements.headerLogo.classList.add('animate-in');
+            }, 100);
         }
-        return statusFilter ? item.status === statusFilter : true;
-    });
+    },
+    
 
-    if (filteredItems.length === 0) {
-        container.style.display = 'none';
-        noItemsMsg.style.display = 'block';
-        noItemsMsg.innerHTML = `
-            <div style="text-align: center; padding: 60px 20px;">
+    cacheDOMElements() {
+        // Cache all necessary elements to avoid repeated DOM queries
+        this.elements = {
+            headerLogo: document.querySelector('.header-logo'),
+            itemsGrid: document.getElementById('itemsGrid'),
+            noItemsMessage: document.getElementById('noItems'),
+            searchInput: document.getElementById('searchInput'),
+            categoryFilter: document.getElementById('categoryFilter'),
+            statusFilter: document.getElementById('statusFilter'),
+            imageModal: document.getElementById('imageModal'),
+            modalImage: document.getElementById('modalImage'),
+            closeModalBtn: document.querySelector('.close-modal'),
+        };
+    },
+
+    bindEventListeners() {
+        // All event listeners are attached here, not in the HTML
+        if (this.elements.searchInput) {
+            this.elements.searchInput.addEventListener('input', () => {
+                clearTimeout(this.searchTimeout);
+                this.searchTimeout = setTimeout(() => this.filterAndRender(), 300);
+            });
+        }
+        if (this.elements.categoryFilter) {
+            this.elements.categoryFilter.addEventListener('change', () => this.filterAndRender());
+        }
+        if (this.elements.statusFilter) {
+            this.elements.statusFilter.addEventListener('change', () => this.filterAndRender());
+        }
+        this.bindModalEvents();
+    },
+
+    bindModalEvents() {
+        if (!this.elements.imageModal || !this.elements.closeModalBtn) return;
+        this.elements.closeModalBtn.addEventListener('click', () => this.closeImageModal());
+        this.elements.imageModal.addEventListener('click', (e) => {
+            if (e.target === this.elements.imageModal) this.closeImageModal();
+        });
+        document.addEventListener('keydown', (e) => {
+            if (e.key === "Escape" && this.elements.imageModal.classList.contains('show')) {
+                this.closeImageModal();
+            }
+        });
+    },
+
+    // --- DATA HANDLING & RENDERING ---
+    async loadItems() {
+        if (!this.elements.itemsGrid) return;
+        this.elements.itemsGrid.innerHTML = '<div class="loading">Loading amazing items...</div>';
+        try {
+            // In a real-world scenario, the API endpoint would be here
+            const response = await fetch('/api/items');
+            if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
+            
+            this.items = await response.json();
+            this.filterAndRender(); // Initial render after fetching
+        } catch (error) {
+            console.error('Error loading items:', error);
+            this.showErrorMessage('Could not load items from the server.');
+        }
+    },
+
+    filterAndRender() {
+        // This function filters items based on UI controls and calls the render function.
+        const searchTerm = this.elements.searchInput.value.toLowerCase();
+        const category = this.elements.categoryFilter.value;
+        const status = this.elements.statusFilter.value;
+
+        const filteredItems = this.items.filter(item => {
+            const name = item.name || '';
+            const description = item.description || '';
+            const itemCategory = item.category || '';
+            const itemStatus = item.status || '';
+
+            const matchesSearch = name.toLowerCase().includes(searchTerm) || description.toLowerCase().includes(searchTerm);
+            const matchesCategory = !category || itemCategory === category;
+            const matchesStatus = !status || itemStatus === status;
+            
+            return matchesSearch && matchesCategory && matchesStatus;
+        });
+
+        this.renderItems(filteredItems);
+    },
+
+    renderItems(itemsToRender) {
+        if (!this.elements.itemsGrid || !this.elements.noItemsMessage) return;
+
+        this.elements.itemsGrid.innerHTML = ''; // Clear grid
+
+        if (itemsToRender.length === 0) {
+            this.elements.itemsGrid.style.display = 'none';
+            this.elements.noItemsMessage.innerHTML = `
                 <div style="font-size: 3rem; margin-bottom: 20px;">🛍️</div>
-                <p style="font-size: 1.2rem; color: rgba(255,255,255,0.9);">No items found matching your criteria.</p>
-            </div>
-        `;
-        animateNoItems();
-        return;
-    }
-
-    container.style.display = 'grid';
-    noItemsMsg.style.display = 'none';
-
-    // Create item cards with staggered animation
-    filteredItems.forEach((item, index) => {
-        const itemCard = createItemCard(item, index);
-        container.appendChild(itemCard);
-    });
-
-    // Animate items in sequence
-    setTimeout(() => {
-        animateItemsSequentially();
-    }, 100);
-}
-
-// Create individual item card
-function createItemCard(item, index) {
-    const card = document.createElement('div');
-    card.className = 'item-card fade-in';
-    card.style.animationDelay = `${index * 0.1}s`;
-    
-    card.innerHTML = `
-        ${item.image_url ? 
-            `<div class="item-image">
-                <img src="${item.image_url}" alt="${item.name}" style="width: 100%; height: 100%; object-fit: cover;" loading="lazy">
-            </div>` : 
-            `<div class="item-image">📷</div>`
+                <p style="font-size: 1.2rem;">No items found matching your criteria.</p>`;
+            this.elements.noItemsMessage.style.display = 'block';
+        } else {
+            this.elements.itemsGrid.style.display = 'grid';
+            this.elements.noItemsMessage.style.display = 'none';
+            itemsToRender.forEach((item, index) => {
+                const itemCard = this.createItemCard(item);
+                itemCard.style.animationDelay = `${index * 80}ms`;
+                this.elements.itemsGrid.appendChild(itemCard);
+            });
         }
-        <div class="item-details">
-            <div class="item-category">${item.category}</div>
-            <div class="item-title">${item.name}</div>
-            <div class="item-price">$${parseFloat(item.price).toFixed(2)}</div>
-            ${item.description ? `<div class="item-description">${item.description}</div>` : ''}
-            ${formatItemSpecifications(item)}
-            <span class="item-status ${item.status === 'available' ? 'status-available' : 'status-sold'}">
-                ${item.status}
-            </span>
-        </div>
-    `;
+    },
 
-    // Add hover effects
-    addCardInteractions(card);
-
-     // Add click listener for image expansion
-    const imageElement = card.querySelector('.item-image img');
-    if (imageElement) {
-        imageElement.addEventListener('click', (event) => {
-            // Stop the click from triggering the card's ripple effect
-            event.stopPropagation(); 
-            openImageModal(item.image_url);
-        });
-    }
-    
-    return card;
-}
-
-// Format item specifications for public display
-function formatItemSpecifications(item) {
-    const specs = [];
-    
-    // Dimensions
-    if (item.height || item.length || item.depth) {
-        const dimensions = [];
-        if (item.height) dimensions.push(`${item.height}cm H`);
-        if (item.length) dimensions.push(`${item.length}cm L`);
-        if (item.depth) dimensions.push(`${item.depth}cm D`);
-        specs.push(`<strong>Dimensions:</strong> ${dimensions.join(' × ')}`);
-    }
-    
-    // Color and material
-    if (item.color) {
-        specs.push(`<strong>Color:</strong> ${item.color}`);
-    }
-    if (item.material) {
-        specs.push(`<strong>Material:</strong> ${item.material}`);
-    }
-    if (item.condition) {
-        specs.push(`<strong>Condition:</strong> ${item.condition.replace('-', ' ').replace(/\b\w/g, l => l.toUpperCase())}`);
-    }
-    
-    // Additional notes
-    if (item.notes) {
-        specs.push(`<strong>Notes:</strong> ${item.notes}`);
-    }
-    
-    if (specs.length > 0) {
-        return `<div class="item-specs">${specs.join('<br>')}</div>`;
-    }
-    
-    return '';
-}
-
-// Add interactive effects to cards
-function addCardInteractions(card) {
-    // Add magnetic hover effect
-    card.addEventListener('mouseenter', function(e) {
-        this.style.transform = 'translateY(-12px) scale(1.02)';
+    createItemCard(item) {
+        const card = document.createElement('div');
+        card.className = 'item-card';
         
-        // Add subtle rotation based on mouse position
-        card.addEventListener('mousemove', handleCardMouseMove);
-    });
-    
-    card.addEventListener('mouseleave', function(e) {
-        this.style.transform = 'translateY(0) scale(1) rotateX(0) rotateY(0)';
-        card.removeEventListener('mousemove', handleCardMouseMove);
-    });
-    
-    // Add click ripple effect
-    card.addEventListener('click', function(e) {
-        createRippleEffect(e, this);
-    });
-}
+        const price = item.price ? parseFloat(item.price).toFixed(2) : '0.00';
+        const statusClass = item.status === 'available' ? 'status-available' : 'status-sold';
 
-// Handle card mouse movement for tilt effect
-function handleCardMouseMove(e) {
-    const card = e.currentTarget;
-    const rect = card.getBoundingClientRect();
-    const x = e.clientX - rect.left;
-    const y = e.clientY - rect.top;
-    
-    const centerX = rect.width / 2;
-    const centerY = rect.height / 2;
-    
-    const rotateX = (y - centerY) / 10;
-    const rotateY = (centerX - x) / 10;
-    
-    card.style.transform = `translateY(-12px) scale(1.02) rotateX(${rotateX}deg) rotateY(${rotateY}deg)`;
-}
+        card.innerHTML = `
+            <div class="item-image">${item.image_url ? `<img src="${item.image_url}" alt="${item.name}" loading="lazy">` : '📷'}</div>
+            <div class="item-details">
+                <div class="item-category">${item.category || 'Uncategorized'}</div>
+                <div class="item-title">${item.name || 'No Title'}</div>
+                <div class="item-price">$${price}</div>
+                ${item.description ? `<div class="item-description">${item.description}</div>` : ''}
+                ${this.formatItemSpecifications(item)}
+                <span class="item-status ${statusClass}">${item.status || 'unknown'}</span>
+            </div>`;
 
-// Create ripple effect on click
-function createRippleEffect(e, element) {
-    const ripple = document.createElement('div');
-    const rect = element.getBoundingClientRect();
-    const size = Math.max(rect.width, rect.height);
-    const x = e.clientX - rect.left - size / 2;
-    const y = e.clientY - rect.top - size / 2;
+        // Card Interactions
+        card.addEventListener('click', (e) => this.createRippleEffect(e));
+        const imageElement = card.querySelector('img');
+        if (imageElement) {
+            imageElement.addEventListener('click', (e) => {
+                e.stopPropagation();
+                this.openImageModal(item.image_url);
+            });
+        }
+        return card;
+    },
+
+    // --- UI HELPERS & INTERACTIONS ---
+    openImageModal(imageUrl) {
+        if (this.elements.imageModal && this.elements.modalImage) {
+            this.elements.modalImage.src = imageUrl;
+            this.elements.imageModal.classList.add('show');
+            document.body.style.overflow = 'hidden';
+        }
+    },
+
+    closeImageModal() {
+        if (this.elements.imageModal) {
+            this.elements.imageModal.classList.remove('show');
+            document.body.style.overflow = 'auto';
+        }
+    },
     
-    ripple.style.cssText = `
-        position: absolute;
-        width: ${size}px;
-        height: ${size}px;
-        left: ${x}px;
-        top: ${y}px;
-        background: radial-gradient(circle, rgba(102, 126, 234, 0.3) 0%, transparent 70%);
-        border-radius: 50%;
-        transform: scale(0);
-        animation: ripple 0.6s ease-out;
-        pointer-events: none;
-        z-index: 1;
-    `;
+    showErrorMessage(message) {
+        this.elements.itemsGrid.innerHTML = '';
+        this.elements.noItemsMessage.innerHTML = `
+            <div style="font-size: 3rem; margin-bottom: 20px;">⚠️</div>
+            <p style="font-size: 1.2rem;">${message}</p>`;
+        this.elements.noItemsMessage.style.display = 'block';
+    },
+
+    formatItemSpecifications(item) {
+        const specs = [];
+        const dims = [];
+        if (item.height) dims.push(`${item.height}cm H`);
+        if (item.length) dims.push(`${item.length}cm L`);
+        if (item.depth) dims.push(`${item.depth}cm D`);
+        if (dims.length > 0) specs.push(`<strong>Dimensions:</strong> ${dims.join(' × ')}`);
+        if (item.color) specs.push(`<strong>Color:</strong> ${item.color}`);
+        if (item.material) specs.push(`<strong>Material:</strong> ${item.material}`);
+        if (item.condition) specs.push(`<strong>Condition:</strong> ${item.condition.replace(/-/g, ' ').replace(/\b\w/g, l => l.toUpperCase())}`);
+        return specs.length > 0 ? `<div class="item-specs">${specs.join('<br>')}</div>` : '';
+    },
     
-    // Add ripple animation keyframes if not already added
-    if (!document.querySelector('#ripple-styles')) {
-        const style = document.createElement('style');
-        style.id = 'ripple-styles';
-        style.textContent = `
-            @keyframes ripple {
-                to {
-                    transform: scale(2);
-                    opacity: 0;
-                }
+    // --- ENHANCEMENTS (NON-ESSENTIAL) ---
+    runEnhancements() {
+        this.createFloatingElements();
+        this.animateSearchPlaceholder();
+        this.addEasterEgg();
+    },
+    
+    createFloatingElements() { /* ... function content from previous version ... */ },
+    animateSearchPlaceholder() { /* ... function content from previous version ... */ },
+    addEasterEgg() { /* ... function content from previous version ... */ },
+    triggerEasterEgg() { /* ... function content from previous version, styled by injected CSS ... */ },
+    
+    // --- STYLE INJECTION ---
+    injectStyles() {
+        const styleSheet = document.createElement("style");
+        styleSheet.id = 'app-runtime-styles';
+        styleSheet.textContent = `
+            .item-card { position: relative; overflow: hidden; }
+            .ripple {
+                position: absolute;
+                border-radius: 50%;
+                background-color: rgba(229, 72, 72, 0.4);
+                transform: scale(0);
+                animation: ripple 0.6s ease-out;
+                pointer-events: none;
+            }
+            @keyframes ripple { to { transform: scale(4); opacity: 0; } }
+            .easter-egg-message {
+                position: fixed; top: 50%; left: 50%;
+                transform: translate(-50%, -50%);
+                background: var(--color-primary, #E54848); color: white;
+                padding: 20px 40px; border-radius: 20px; z-index: 10000;
+                font-size: 1.2rem; font-weight: bold;
+                box-shadow: 0 20px 40px rgba(0,0,0,0.3);
+                animation: bounceIn 0.5s ease;
             }
         `;
-        document.head.appendChild(style);
+        document.head.appendChild(styleSheet);
     }
-    
-    element.style.position = 'relative';
-    element.appendChild(ripple);
-    
-    setTimeout(() => {
-        ripple.remove();
-    }, 600);
-}
+};
 
-// Animate items on initial load
-function animateItemsOnLoad() {
-    const itemCards = document.querySelectorAll('.item-card');
-    itemCards.forEach((item, index) => {
-        setTimeout(() => {
-            item.style.transform = 'translateY(0)';
-            item.style.opacity = '1';
-        }, index * 150);
-    });
-}
+// --- RUN THE APP ---
+App.init();
 
-// Animate items sequentially when filtering
-function animateItemsSequentially() {
-    const itemCards = document.querySelectorAll('.item-card');
-    itemCards.forEach((item, index) => {
-        item.style.opacity = '0';
-        item.style.transform = 'translateY(30px) scale(0.9)';
-        
-        setTimeout(() => {
-            item.style.transition = 'all 0.6s cubic-bezier(0.4, 0, 0.2, 1)';
-            item.style.opacity = '1';
-            item.style.transform = 'translateY(0) scale(1)';
-        }, index * 100);
-    });
-}
+// --- We are keeping these enhancement functions outside the main App object for clarity ---
+// --- but they will be called by App.runEnhancements() ---
+App.createFloatingElements = function() {
+    const container = document.createElement('div');
+    container.className = 'floating-elements';
+    document.body.insertBefore(container, document.body.firstChild);
+    for (let i = 0; i < 8; i++) {
+        const el = document.createElement('div'); el.className = 'floating-element';
+        const size = Math.random() * 50 + 20;
+        el.style.cssText = `width:${size}px; height:${size}px; left:${Math.random()*100}%; animation-delay:${Math.random()*25}s; animation-duration:${Math.random()*15+20}s;`;
+        container.appendChild(el);
+    }
+};
 
-// Animate no items message
-function animateNoItems() {
-    const noItemsMsg = document.getElementById('noItems');
-    noItemsMsg.style.opacity = '0';
-    noItemsMsg.style.transform = 'translateY(20px)';
-    
-    setTimeout(() => {
-        noItemsMsg.style.transition = 'all 0.5s ease';
-        noItemsMsg.style.opacity = '1';
-        noItemsMsg.style.transform = 'translateY(0)';
-    }, 200);
-}
-
-// Initialize scroll animations
-function initializeScrollAnimations() {
-    const observerOptions = {
-        threshold: 0.1,
-        rootMargin: '0px 0px -50px 0px'
+App.animateSearchPlaceholder = function() {
+    if (!this.elements.searchInput) return;
+    const placeholders = ['Search for treasure...', 'Find a new couch...', `It's Friday afternoon in Nuremberg...`, 'Anything but work...'];
+    let i = 0, j = 0, current = '', isDeleting = false;
+    const type = () => {
+        if (!this.elements.searchInput) return;
+        current = placeholders[i];
+        if (isDeleting) { j--; } else { j++; }
+        this.elements.searchInput.placeholder = current.substring(0, j);
+        let delay = isDeleting ? 40 : 90;
+        if (!isDeleting && j === current.length) { delay = 2200; isDeleting = true; }
+        if (isDeleting && j === 0) { isDeleting = false; i = (i + 1) % placeholders.length; delay = 500; }
+        setTimeout(type, delay);
     };
-    
-    const observer = new IntersectionObserver((entries) => {
-        entries.forEach(entry => {
-            if (entry.isIntersecting) {
-                entry.target.classList.add('visible');
-            }
-        });
-    }, observerOptions);
-    
-    // Observe elements that should animate on scroll
-    document.querySelectorAll('.fade-in').forEach(el => {
-        observer.observe(el);
-    });
-}
+    setTimeout(type, 1500);
+};
 
-// Filter items with smooth transition
-function filterItems() {
-    // Add loading state
-    const container = document.getElementById('itemsGrid');
-    container.style.opacity = '0.6';
-    container.style.transform = 'scale(0.98)';
-    
-    // Reload items with new filters
-    setTimeout(() => {
-        loadItems();
-        
-        // Restore container
-        setTimeout(() => {
-            container.style.transition = 'all 0.4s ease';
-            container.style.opacity = '1';
-            container.style.transform = 'scale(1)';
-        }, 100);
-    }, 200);
-}
-
-// Enhanced search with debouncing
-let searchTimeout;
-function debounceSearch() {
-    clearTimeout(searchTimeout);
-    searchTimeout = setTimeout(() => {
-        filterItems();
-    }, 300);
-}
-
-// Update search input to use debounced search
-document.addEventListener('DOMContentLoaded', function() {
-    const searchInput = document.getElementById('searchInput');
-    if (searchInput) {
-        searchInput.addEventListener('input', debounceSearch);
-    }
-});
-
-// Add parallax effect to header
-function addParallaxEffect() {
-    window.addEventListener('scroll', () => {
-        const scrolled = window.pageYOffset;
-        const header = document.querySelector('.header');
-        if (header) {
-            const speed = scrolled * 0.5;
-            header.style.transform = `translateY(${speed}px)`;
-        }
-    });
-}
-
-// Add typing animation to search placeholder
-function animateSearchPlaceholder() {
-    const searchInput = document.getElementById('searchInput');
-    if (!searchInput) return;
-    
-    const placeholders = [
-        'Search items...',
-        'Find furniture...',
-        'Look for electronics...',
-        'Discover great deals...',
-        'Search by name...'
-    ];
-    
-    let currentIndex = 0;
-    let currentText = '';
-    let isDeleting = false;
-    
-    function typeEffect() {
-        const currentPlaceholder = placeholders[currentIndex];
-        
-        if (isDeleting) {
-            currentText = currentPlaceholder.substring(0, currentText.length - 1);
-        } else {
-            currentText = currentPlaceholder.substring(0, currentText.length + 1);
-        }
-        
-        searchInput.placeholder = currentText;
-        
-        let delay = isDeleting ? 50 : 100;
-        
-        if (!isDeleting && currentText === currentPlaceholder) {
-            delay = 2000;
-            isDeleting = true;
-        } else if (isDeleting && currentText === '') {
-            isDeleting = false;
-            currentIndex = (currentIndex + 1) % placeholders.length;
-            delay = 500;
-        }
-        
-        setTimeout(typeEffect, delay);
-    }
-    
-    // Start typing effect only if search input is empty
-    if (searchInput.value === '') {
-        setTimeout(typeEffect, 1000);
-    }
-}
-
-// Optimize animations for better performance
-function optimizeAnimations() {
-    // Reduce animations on slower devices
-    const isSlowDevice = navigator.hardwareConcurrency < 4 || 
-                        /Android|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
-    
-    if (isSlowDevice) {
-        document.documentElement.style.setProperty('--animation-duration', '0.3s');
-        document.documentElement.style.setProperty('--transition-duration', '0.2s');
-    }
-    
-    // Pause animations when tab is not visible
-    document.addEventListener('visibilitychange', () => {
-        const animations = document.querySelectorAll('.floating-element');
-        animations.forEach(el => {
-            if (document.hidden) {
-                el.style.animationPlayState = 'paused';
-            } else {
-                el.style.animationPlayState = 'running';
-            }
-        });
-    });
-}
-
-// Add Easter egg - Konami code
-function addEasterEgg() {
-    const konamiCode = [38, 38, 40, 40, 37, 39, 37, 39, 66, 65];
-    let konamiIndex = 0;
-    
+App.addEasterEgg = function() {
+    const code = [38, 38, 40, 40, 37, 39, 37, 39, 66, 65];
+    let index = 0;
     document.addEventListener('keydown', (e) => {
-        if (e.keyCode === konamiCode[konamiIndex]) {
-            konamiIndex++;
-            if (konamiIndex === konamiCode.length) {
-                triggerEasterEgg();
-                konamiIndex = 0;
+        if (e.keyCode === code[index]) {
+            index++;
+            if (index === code.length) {
+                this.triggerEasterEgg();
+                index = 0;
             }
         } else {
-            konamiIndex = 0;
+            index = 0;
         }
     });
-}
+};
 
-function triggerEasterEgg() {
-    // Create rainbow effect
+App.triggerEasterEgg = function() {
+    const existingStyle = document.getElementById('easter-egg-style');
+    if(existingStyle) existingStyle.remove();
+    const existingMsg = document.querySelector('.easter-egg-message');
+    if(existingMsg) existingMsg.remove();
+    
     const style = document.createElement('style');
-    style.textContent = `
-        .item-card {
-            animation: rainbow 2s infinite !important;
-        }
-        @keyframes rainbow {
-            0% { filter: hue-rotate(0deg); }
-            100% { filter: hue-rotate(360deg); }
-        }
-    `;
+    style.id = 'easter-egg-style';
+    style.textContent = `.item-card { animation: rainbow 2s infinite linear !important; } @keyframes rainbow { 0% { filter: hue-rotate(0deg); } 100% { filter: hue-rotate(360deg); } }`;
     document.head.appendChild(style);
-    
-    setTimeout(() => {
-        document.head.removeChild(style);
-    }, 10000);
-    
-    // Show secret message
-    const message = document.createElement('div');
-    message.style.cssText = `
-        position: fixed;
-        top: 50%;
-        left: 50%;
-        transform: translate(-50%, -50%);
-        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-        color: white;
-        padding: 20px 40px;
-        border-radius: 20px;
-        z-index: 10000;
-        font-size: 1.2rem;
-        font-weight: bold;
-        box-shadow: 0 20px 40px rgba(0,0,0,0.3);
-        animation: bounceIn 0.5s ease;
-    `;
-    message.textContent = '🎉 You found the secret! Enjoy the rainbow! 🌈';
-    
-    document.body.appendChild(message);
-    
-    setTimeout(() => {
-        message.style.animation = 'bounceOut 0.5s ease';
-        setTimeout(() => {
-            document.body.removeChild(message);
-        }, 500);
-    }, 3000);
-}
 
-// --- Add these new functions to your script ---
+    const msg = document.createElement('div');
+    msg.className = 'easter-egg-message';
+    msg.textContent = '🎉 You found the secret! Enjoy the rainbow! 🌈';
+    document.body.appendChild(msg);
 
-// Get modal elements once
-const imageModal = document.getElementById('imageModal');
-const modalImage = document.getElementById('modalImage');
-const closeModalBtn = document.querySelector('.close-modal');
+    setTimeout(() => style.remove(), 8000);
+    setTimeout(() => msg.remove(), 4000);
+};
 
-/**
- * Opens the modal and displays the clicked image.
- * @param {string} imageUrl - The URL of the image to display.
- */
-function openImageModal(imageUrl) {
-    if (imageModal && modalImage) {
-        modalImage.src = imageUrl;
-        imageModal.classList.add('show');
-        // Prevent body from scrolling when modal is open
-        document.body.style.overflow = 'hidden';
-    }
-}
-
-/**
- * Closes the image modal.
- */
-function closeImageModal() {
-    if (imageModal) {
-        imageModal.classList.remove('show');
-        // Restore body scrolling
-        document.body.style.overflow = 'auto';
-    }
-}
-
-// Add event listeners to close the modal
-if (imageModal && closeModalBtn) {
-    closeModalBtn.addEventListener('click', closeImageModal);
-    
-    // Also close modal if user clicks on the background
-    imageModal.addEventListener('click', (event) => {
-        if (event.target === imageModal) {
-            closeImageModal();
-        }
-    });
-
-    // Close with the Escape key
-    document.addEventListener('keydown', (e) => {
-        if (e.key === "Escape" && imageModal.classList.contains('show')) {
-            closeImageModal();
-        }
-    });
-}
+// This re-implementation of createRippleEffect is to be used by the App object.
+App.createRippleEffect = function(e) {
+    const card = e.currentTarget;
+    if (e.target.tagName === 'IMG') return; // Do not trigger on image click
+    const ripple = document.createElement('span');
+    const rect = card.getBoundingClientRect();
+    const size = Math.max(rect.width, rect.height);
+    ripple.style.width = ripple.style.height = `${size}px`;
+    ripple.style.left = `${e.clientX - rect.left - size / 2}px`;
+    ripple.style.top = `${e.clientY - rect.top - size / 2}px`;
+    ripple.classList.add('ripple');
+    card.appendChild(ripple);
+    ripple.addEventListener('animationend', () => ripple.remove());
+};
