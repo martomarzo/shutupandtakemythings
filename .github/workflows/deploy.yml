@@ -1,0 +1,21 @@
+name: Deploy to Server with Self-Hosted Runner
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  deploy:
+    runs-on: self-hosted # This targets your self-hosted runner
+
+    steps:
+    - name: Checkout repository
+      uses: actions/checkout@v3
+
+    - name: Pull and Restart
+      run: |
+        cd /home/shutupandtakemythings # The path to your project on the server
+        git pull origin main
+        npm install
+        # pm2 restart my-app
