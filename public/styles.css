@@ -287,7 +287,38 @@ body:has(.container:not(.admin-container)) {
     .filters { flex-direction: column; align-items: stretch; }
     .filter-controls { flex-direction: column; gap: var(--space-md); }
 }
+/* styles.css */
 
+/* ==========================================================================
+   Admin Panel Notifications
+   ========================================================================== */
+.notification {
+    position: fixed;
+    top: 20px;
+    right: 20px;
+    padding: 15px 20px;
+    color: white;
+    border-radius: 8px;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+    z-index: 2000;
+    font-weight: 500;
+    transform: translateX(120%);
+    transition: transform 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+    max-width: 320px;
+    word-wrap: break-word;
+}
+.notification.show {
+    transform: translateX(0);
+}
+.notification-success {
+    background-color: var(--color-accent, #28a745);
+}
+.notification-error {
+    background-color: var(--color-primary, #dc3545);
+}
+.notification-info {
+    background-color: #007bff;
+}
 
 /* ==========================================================================
    DO NOT MODIFY BELOW THIS LINE - ADMIN & LOGIN STYLES

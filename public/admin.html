@@ -5,6 +5,10 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Admin Panel - Item Manager</title>
     <link rel="stylesheet" href="styles.css">
+    <link rel="icon" type="image/png" href="shutupandtakemymoney.png">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Sora:wght@300;400;600;700&display=swap" rel="stylesheet">
 </head>
 <body>
     <div class="container admin-container">
@@ -16,25 +20,22 @@
                 </div>
                 <div class="header-right">
                     <a href="/" class="btn btn-sm btn-secondary">View Store</a>
-                    <button onclick="openPasswordModal()" class="btn btn-sm btn-secondary">Change Password</button>
-                    <button onclick="logout()" class="btn btn-sm btn-danger">Logout</button>
+                    <button id="passwordModalOpen" class="btn btn-sm btn-secondary">Change Password</button>
+                    <button id="logoutBtn" class="btn btn-sm btn-danger">Logout</button>
                 </div>
             </div>
         </header>
         
         <div class="admin-section">
-            <!-- Manage Items Section (Main Focus) -->
             <div class="card">
                 <div class="card-header">
                     <h2>Manage Items</h2>
-                    <button onclick="toggleAddForm()" class="btn btn-primary" id="addItemToggle">
-                        + Add New Item
-                    </button>
+                     <button class="btn btn-primary" id="addItemToggle">+ Add New Item</button>
                 </div>
                 
                 <div class="admin-filters">
-                    <input type="text" id="adminSearch" placeholder="Search items..." onkeyup="filterAdminItems()">
-                    <select id="adminStatusFilter" onchange="filterAdminItems()">
+                    <input type="text" id="adminSearch" placeholder="Search items...">
+                    <select id="adminStatusFilter">
                         <option value="">All Status</option>
                         <option value="available">Available</option>
                         <option value="sold">Sold</option>
@@ -42,32 +43,29 @@
                 </div>
                 
                 <div id="adminItems" class="admin-items">
-                    <!-- Admin items will be loaded here -->
-                </div>
+                    </div>
             </div>
 
-            <!-- Add New Item Form (Hidden by default) -->
             <div class="card" id="addItemCard" style="display: none;">
                 <div class="card-header">
-                    <h2>Add New Item</h2>
-                    <button onclick="toggleAddForm()" class="btn btn-secondary">Cancel</button>
-                </div>
+                    <h2>Add/Edit Item</h2>
+                    </div>
                 
                 <form id="itemForm">
                     <div class="form-row">
                         <div class="form-group">
                             <label for="itemName">Item Name *</label>
-                            <input type="text" id="itemName" required>
+                            <input type="text" id="itemName" name="itemName" required>
                         </div>
                         <div class="form-group">
                             <label for="itemPrice">Price ($) *</label>
-                            <input type="number" id="itemPrice" step="0.01" min="0" required>
+                            <input type="number" id="itemPrice" name="itemPrice" step="0.01" min="0" required>
                         </div>
                     </div>
                     
                     <div class="form-group">
                         <label for="itemCategory">Category</label>
-                        <select id="itemCategory">
+                        <select id="itemCategory" name="itemCategory">
                             <option value="furniture">Furniture</option>
                             <option value="electronics">Electronics</option>
                             <option value="appliances">Appliances</option>
@@ -78,41 +76,26 @@
                     
                     <div class="form-group">
                         <label for="itemDescription">Description</label>
-                        <textarea id="itemDescription" placeholder="Describe the item's condition, features, etc."></textarea>
+                        <textarea id="itemDescription" name="itemDescription" placeholder="Describe the item's condition, features, etc."></textarea>
                     </div>
                     
                     <div class="form-group">
                         <label>Dimensions</label>
                         <div class="dimensions-grid">
-                            <div class="dimension-input">
-                                <label for="itemHeight">Height</label>
-                                <input type="number" id="itemHeight" step="0.1" min="0" placeholder="cm">
-                            </div>
-                            <div class="dimension-input">
-                                <label for="itemLength">Length</label>
-                                <input type="number" id="itemLength" step="0.1" min="0" placeholder="cm">
-                            </div>
-                            <div class="dimension-input">
-                                <label for="itemDepth">Depth</label>
-                                <input type="number" id="itemDepth" step="0.1" min="0" placeholder="cm">
-                            </div>
+                            <div class="dimension-input"><label for="itemHeight">Height</label><input type="number" id="itemHeight" name="itemHeight" step="0.1" min="0" placeholder="cm"></div>
+                            <div class="dimension-input"><label for="itemLength">Length</label><input type="number" id="itemLength" name="itemLength" step="0.1" min="0" placeholder="cm"></div>
+                            <div class="dimension-input"><label for="itemDepth">Depth</label><input type="number" id="itemDepth" name="itemDepth" step="0.1" min="0" placeholder="cm"></div>
                         </div>
                     </div>
                     
                     <div class="form-row">
-                        <div class="form-group">
-                            <label for="itemColor">Color</label>
-                            <input type="text" id="itemColor" placeholder="e.g., White, Black, Oak Wood">
-                        </div>
-                        <div class="form-group">
-                            <label for="itemMaterial">Material</label>
-                            <input type="text" id="itemMaterial" placeholder="e.g., Wood, Metal, Fabric">
-                        </div>
+                        <div class="form-group"><label for="itemColor">Color</label><input type="text" id="itemColor" name="itemColor" placeholder="e.g., White, Black, Oak Wood"></div>
+                        <div class="form-group"><label for="itemMaterial">Material</label><input type="text" id="itemMaterial" name="itemMaterial" placeholder="e.g., Wood, Metal, Fabric"></div>
                     </div>
                     
                     <div class="form-group">
                         <label for="itemCondition">Condition</label>
-                        <select id="itemCondition">
+                        <select id="itemCondition" name="itemCondition">
                             <option value="excellent">Excellent</option>
                             <option value="very-good">Very Good</option>
                             <option value="good">Good</option>
@@ -123,55 +106,40 @@
                     
                     <div class="form-group">
                         <label for="itemNotes">Additional Notes</label>
-                        <textarea id="itemNotes" placeholder="Any additional information about the item..."></textarea>
+                        <textarea id="itemNotes" name="itemNotes" placeholder="Any additional information about the item..."></textarea>
                     </div>
                     
                     <div class="form-group">
                         <label for="itemImage">Upload Photo</label>
-                        <input type="file" id="itemImage" accept="image/*" onchange="previewImage()">
+                        <input type="file" id="itemImage" name="image" accept="image/*">
                         <img id="imagePreview" class="image-preview" style="display: none;">
                     </div>
                     
                     <div class="form-actions">
                         <button type="submit" class="btn btn-primary" id="submitBtn">Add Item</button>
-                        <button type="button" class="btn btn-secondary" onclick="clearForm()">Clear Form</button>
+                        <button type="button" class="btn btn-secondary" id="clearFormBtn">Clear Form</button>
                     </div>
                 </form>
             </div>
         </div>
     </div>
 
-    <!-- Password Change Modal -->
     <div id="passwordModal" class="modal" style="display: none;">
         <div class="modal-content">
             <div class="modal-header">
                 <h3>Change Password</h3>
-                <button onclick="closePasswordModal()" class="modal-close">&times;</button>
+                <button class="modal-close">&times;</button>
             </div>
             
             <form id="passwordForm">
                 <div class="modal-body">
-                    <div class="form-group">
-                        <label for="currentPassword">Current Password</label>
-                        <input type="password" id="currentPassword" required autocomplete="current-password">
-                    </div>
-                    
-                    <div class="form-group">
-                        <label for="newPassword">New Password</label>
-                        <input type="password" id="newPassword" required minlength="6" autocomplete="new-password">
-                        <small class="form-hint">Minimum 6 characters</small>
-                    </div>
-                    
-                    <div class="form-group">
-                        <label for="confirmPassword">Confirm New Password</label>
-                        <input type="password" id="confirmPassword" required autocomplete="new-password">
-                    </div>
-                    
+                    <div class="form-group"><label for="currentPassword">Current Password</label><input type="password" id="currentPassword" required autocomplete="current-password"></div>
+                    <div class="form-group"><label for="newPassword">New Password</label><input type="password" id="newPassword" required minlength="6" autocomplete="new-password"><small class="form-hint">Minimum 6 characters</small></div>
+                    <div class="form-group"><label for="confirmPassword">Confirm New Password</label><input type="password" id="confirmPassword" required autocomplete="new-password"></div>
                     <div id="passwordError" class="error-message" style="display: none;"></div>
                 </div>
-                
                 <div class="modal-footer">
-                    <button type="button" onclick="closePasswordModal()" class="btn btn-secondary">Cancel</button>
+                     <button type="button" class="btn btn-secondary modal-close">Cancel</button>
                     <button type="submit" class="btn btn-primary" id="passwordSubmitBtn">Change Password</button>
                 </div>
             </form>
