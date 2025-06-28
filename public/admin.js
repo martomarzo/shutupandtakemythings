@@ -1,7 +1,6 @@
 /**
  * ===================================================================
  * Shut Up and Take My Money - ADMIN PANEL SCRIPT
- * Final, Verified, and Corrected Version by Gemini
  * ===================================================================
  */
 const AdminApp = {
@@ -41,7 +40,6 @@ const AdminApp = {
             logoutBtn: document.getElementById('logoutBtn'),
             passwordModal: document.getElementById('passwordModal'),
             passwordModalOpen: document.getElementById('passwordModalOpen'),
-            // CORRECTED SELECTOR: Looks for the correct button class
             passwordModalClose: document.querySelectorAll('.modal-close-btn'),
             passwordForm: document.getElementById('passwordForm'),
             passwordError: document.getElementById('passwordError'),
