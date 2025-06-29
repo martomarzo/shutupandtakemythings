@@ -247,13 +247,15 @@ const App = {
 
       async handleContactFormSubmit(event) {
         event.preventDefault();
-        const ntfyUrl = this.config.ntfyUrl;
+        const ntfyUrl = this.config.ntfyUrl; // Use the loaded config
         if (!ntfyUrl) {
             this.showNotification('Configuration error. Unable to send message.', 'error');
             return;
         }
+
         const itemId = this.elements.contactItemId.value;
         const name = document.getElementById('contactName').value;
+        const email = document.getElementById('contactEmail').value;
         const comment = document.getElementById('contactComment').value;
         const item = this.items.find(i => i.id == itemId);
 
@@ -264,7 +266,7 @@ const App = {
 
         const message = `
         New message about: ${item.name}
-        From: ${name}
+        From: ${name} (${email})
         Comment: ${comment}
         `;
 
@@ -275,7 +277,8 @@ const App = {
                 headers: {
                     'Title': `New inquiry for ${item.name}`,
                     'Priority': 'high',
-                    'Tags': 'tada,partying_face'
+                    'Tags': 'tada,partying_face',
+                
                 }
             });
             this.closeContactModal();
