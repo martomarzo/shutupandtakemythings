@@ -6,13 +6,12 @@
 const App = {
     // --- STATE ---
     items: [], // Full list of items from the server
-    config: {}, // To store config from the server, like the NTFY_URL
+    config: {}, // To store config from the server
     elements: {}, // Cached DOM elements for performance
     searchTimeout: null, // For debouncing search input
 
     // --- INITIALIZATION ---
     init() {
-        // The App's entry point. Runs once the DOM is ready.
         if (document.readyState === 'loading') {
             document.addEventListener('DOMContentLoaded', () => this.run());
         } else {
@@ -23,14 +22,12 @@ const App = {
     async run() {
         console.log('App is running...');
         await this.loadConfig(); // Load config first
-        this.injectStyles();
         this.cacheDOMElements();
         this.bindEventListeners();
         this.loadItems();
         this.runEnhancements();
 
        if (this.elements.header) {
-             // Use a short timeout to ensure the browser is ready
             setTimeout(() => {
                 this.elements.header.classList.add('is-visible');
             }, 100);
@@ -52,10 +49,8 @@ const App = {
             this.showNotification(error.message, 'error');
         }
     },
-    
 
-     cacheDOMElements() {
-        // Cache all necessary elements to avoid repeated DOM queries
+    cacheDOMElements() {
         this.elements = {
             header: document.querySelector('.header'),
             headerLogo: document.querySelector('.header-logo'),
@@ -66,7 +61,7 @@ const App = {
             statusFilter: document.getElementById('statusFilter'),
             imageModal: document.getElementById('imageModal'),
             modalImage: document.getElementById('modalImage'),
-            closeModalBtn: document.querySelector('.close-modal'),
+            closeModalBtn: document.querySelector('#imageModal .close-modal'),
             contactModal: document.getElementById('contactModal'),
             contactForm: document.getElementById('contactForm'),
             contactItemId: document.getElementById('contactItemId'),
@@ -75,7 +70,6 @@ const App = {
     },
 
     bindEventListeners() {
-        // All event listeners are attached here, not in the HTML
         if (this.elements.searchInput) {
             this.elements.searchInput.addEventListener('input', () => {
                 clearTimeout(this.searchTimeout);
@@ -91,24 +85,45 @@ const App = {
         this.bindModalEvents();
     },
 
-     bindModalEvents() {
-        if (!this.elements.imageModal || !this.elements.closeModalBtn) return;
-        this.elements.closeModalBtn.addEventListener('click', () => this.closeImageModal());
-        this.elements.imageModal.addEventListener('click', (e) => {
-            if (e.target === this.elements.imageModal) this.closeImageModal();
-        });
+    bindModalEvents() {
+        // Image Modal
+        if (this.elements.imageModal && this.elements.closeModalBtn) {
+            this.elements.closeModalBtn.addEventListener('click', () => this.closeImageModal());
+            this.elements.imageModal.addEventListener('click', (e) => {
+                if (e.target === this.elements.imageModal) this.closeImageModal();
+            });
+        }
+
+        // Contact Modal
+        if (this.elements.contactModal && this.elements.closeContactModalBtn) {
+            this.elements.closeContactModalBtn.addEventListener('click', () => this.closeContactModal());
+            this.elements.contactModal.addEventListener('click', (e) => {
+                if (e.target === this.elements.contactModal) this.closeContactModal();
+            });
+        }
+        
+        // Use event delegation for the contact form buttons
+        if (this.elements.contactForm) {
+            this.elements.contactForm.addEventListener('click', (event) => {
+                const button = event.target.closest('button');
+                if (!button) return;
+
+                event.preventDefault();
+
+                if (button.id === 'sendWhatsAppBtn') {
+                    this.handleContact('whatsapp');
+                } else if (button.id === 'sendEmailBtn') {
+                    this.handleContact('ntfy');
+                }
+            });
+        }
+
+        // Global keydown listener
         document.addEventListener('keydown', (e) => {
             if (e.key === "Escape" && this.elements.imageModal.classList.contains('show')) {
                 this.closeImageModal();
             }
         });
-
-        if (!this.elements.contactModal || !this.elements.closeContactModalBtn) return;
-        this.elements.closeContactModalBtn.addEventListener('click', () => this.closeContactModal());
-        this.elements.contactModal.addEventListener('click', (e) => {
-            if (e.target === this.elements.contactModal) this.closeContactModal();
-        });
-         this.elements.contactForm.addEventListener('submit', (e) => this.handleContactFormSubmit(e));
     },
 
     // --- DATA HANDLING & RENDERING ---
@@ -116,12 +131,11 @@ const App = {
         if (!this.elements.itemsGrid) return;
         this.elements.itemsGrid.innerHTML = '<div class="loading">Loading amazing items...</div>';
         try {
-            // In a real-world scenario, the API endpoint would be here
             const response = await fetch('/api/items');
             if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
             
             this.items = await response.json();
-            this.filterAndRender(); // Initial render after fetching
+            this.filterAndRender();
         } catch (error) {
             console.error('Error loading items:', error);
             this.showErrorMessage('Could not load items from the server.');
@@ -129,7 +143,6 @@ const App = {
     },
 
     filterAndRender() {
-        // This function filters items based on UI controls and calls the render function.
         const searchTerm = this.elements.searchInput.value.toLowerCase();
         const category = this.elements.categoryFilter.value;
         const status = this.elements.statusFilter.value;
@@ -153,7 +166,7 @@ const App = {
     renderItems(itemsToRender) {
         if (!this.elements.itemsGrid || !this.elements.noItemsMessage) return;
 
-        this.elements.itemsGrid.innerHTML = ''; // Clear grid
+        this.elements.itemsGrid.innerHTML = '';
 
         if (itemsToRender.length === 0) {
             this.elements.itemsGrid.style.display = 'none';
@@ -190,11 +203,10 @@ const App = {
                 ${this.formatItemSpecifications(item)}
                 <span class="item-status ${statusClass}">${item.status || 'unknown'}</span>
                 <div class="item-actions">
-                    <button class="btn btn-primary btn-sm interested-btn" data-id="${item.id}">I'm Interested</button>
+                    <button class="btn btn-primary interested-btn" data-id="${item.id}">I'm Interested</button>
                 </div>
             </div>`;
 
-        // Card Interactions
         card.addEventListener('click', (e) => this.createRippleEffect(e));
         const imageElement = card.querySelector('img');
         if (imageElement) {
@@ -228,8 +240,8 @@ const App = {
             document.body.style.overflow = 'auto';
         }
     },
-
-     openContactModal(itemId) {
+    
+    openContactModal(itemId) {
         if (this.elements.contactModal) {
             this.elements.contactItemId.value = itemId;
             this.elements.contactModal.classList.add('show');
@@ -244,18 +256,19 @@ const App = {
             this.elements.contactForm.reset();
         }
     },
+    
+    async handleContact(method) {
+        const name = document.getElementById('contactName').value;
+        const email = document.getElementById('contactEmail').value;
 
-      async handleContactFormSubmit(event) {
-        event.preventDefault();
-        const ntfyUrl = this.config.ntfyUrl; // Use the loaded config
-        if (!ntfyUrl) {
-            this.showNotification('Configuration error. Unable to send message.', 'error');
+        // Manual validation
+        if (!name || !email) {
+            this.showNotification('Please fill out your name and email.', 'error');
             return;
         }
 
+        const { whatsappNumber, ntfyUrl } = this.config;
         const itemId = this.elements.contactItemId.value;
-        const name = document.getElementById('contactName').value;
-        const email = document.getElementById('contactEmail').value;
         const comment = document.getElementById('contactComment').value;
         const item = this.items.find(i => i.id == itemId);
 
@@ -264,28 +277,51 @@ const App = {
             return;
         }
 
-        const message = `
-        New message about: ${item.name}
-        From: ${name} (${email})
-        Comment: ${comment}
-        `;
-
-        try {
-            await fetch(ntfyUrl, {
-                method: 'POST',
-                body: message,
-                headers: {
-                    'Title': `New inquiry for ${item.name}`,
-                    'Priority': 'high',
-                    'Tags': 'tada,partying_face',
-                
-                }
-            });
+        if (method === 'whatsapp') {
+            if (!whatsappNumber) {
+                this.showNotification('Configuration error: WhatsApp number not set.', 'error');
+                return;
+            }
+            const messageParts = [
+                `Hello! I'm interested in this item: *${item.name}*`,
+                `My name is: ${name} (${email})`
+            ];
+            if (comment) {
+                messageParts.push(`\nMy comment: ${comment}`);
+            }
+            const encodedMessage = encodeURIComponent(messageParts.join('\n'));
+            const whatsappUrl = `https://wa.me/${whatsappNumber}?text=${encodedMessage}`;
+            
+            window.open(whatsappUrl, '_blank');
             this.closeContactModal();
-            this.showNotification('Message sent successfully!', 'success');
-        } catch (error) {
-            console.error('Error sending message:', error);
-            this.showNotification('Failed to send message. Please try again later.', 'error');
+            this.showNotification('Opening WhatsApp...', 'success');
+
+        } else if (method === 'ntfy') {
+            if (!ntfyUrl) {
+                this.showNotification('Configuration error: Ntfy URL not set.', 'error');
+                return;
+            }
+            const message = `
+            New message about: ${item.name}
+            From: ${name}
+            Email: ${email}
+            Comment: ${comment}
+            `;
+            try {
+                await fetch(ntfyUrl, {
+                    method: 'POST',
+                    body: message,
+                    headers: {
+                        'Title': `New inquiry for ${item.name}`,
+                        'Priority': 'high'
+                    }
+                });
+                this.closeContactModal();
+                this.showNotification('Message sent successfully!', 'success');
+            } catch (error) {
+                console.error('Error sending message:', error);
+                this.showNotification('Failed to send message. Please try again later.', 'error');
+            }
         }
     },
     
@@ -309,7 +345,7 @@ const App = {
         if (item.condition) specs.push(`<strong>Condition:</strong> ${item.condition.replace(/-/g, ' ').replace(/\b\w/g, l => l.toUpperCase())}`);
         return specs.length > 0 ? `<div class="item-specs">${specs.join('<br>')}</div>` : '';
     },
-
+    
     showNotification(message, type = 'info') {
         const existing = document.querySelector('.notification');
         if (existing) existing.remove();
@@ -321,75 +357,20 @@ const App = {
         setTimeout(() => {
             notification.classList.remove('show');
             setTimeout(() => notification.remove(), 500);
-        }, 4000);
+        }, 10000);
     },
-    
+
     // --- ENHANCEMENTS (NON-ESSENTIAL) ---
     runEnhancements() {
         this.createFloatingElements();
-        // this.animateSearchPlaceholder();
         this.addEasterEgg();
-    },
-    
-    createFloatingElements() { /* ... function content from previous version ... */ },
-    animateSearchPlaceholder() { /* ... function content from previous version ... */ },
-    addEasterEgg() { /* ... function content from previous version ... */ },
-    triggerEasterEgg() { /* ... function content from previous version, styled by injected CSS ... */ },
-    
-    // --- STYLE INJECTION ---
-      injectStyles() {
-        const styleSheet = document.createElement("style");
-        styleSheet.id = 'app-runtime-styles';
-        styleSheet.textContent = `
-            .item-card { position: relative; overflow: hidden; }
-            .ripple {
-                position: absolute;
-                border-radius: 50%;
-                background-color: rgba(229, 72, 72, 0.4);
-                transform: scale(0);
-                animation: ripple 0.6s ease-out;
-                pointer-events: none;
-            }
-            @keyframes ripple { to { transform: scale(4); opacity: 0; } }
-            .easter-egg-message {
-                position: fixed; top: 50%; left: 50%;
-                transform: translate(-50%, -50%);
-                background: var(--color-primary, #E54848); color: white;
-                padding: 20px 40px; border-radius: 20px; z-index: 10000;
-                font-size: 1.2rem; font-weight: bold;
-                box-shadow: 0 20px 40px rgba(0,0,0,0.3);
-                animation: bounceIn 0.5s ease;
-            }
-            .notification {
-                position: fixed;
-                top: 20px;
-                left: 50%;
-                transform: translate(-50%, -150%);
-                padding: 1rem 1.25rem;
-                color: white;
-                border-radius: var(--border-radius-sm);
-                box-shadow: var(--shadow-lg);
-                z-index: 2000;
-                font-weight: 500;
-                transition: transform 0.4s cubic-bezier(0.4, 0, 0.2, 1);
-                max-width: 320px;
-                word-wrap: break-word;
-            }
-            .notification.show {
-                transform: translate(-50%, 0);
-            }
-            .notification-success { background-color: var(--color-accent); }
-            .notification-error { background-color: var(--color-primary); }
-        `;
-        document.head.appendChild(styleSheet);
     }
 };
 
 // --- RUN THE APP ---
 App.init();
 
-// --- We are keeping these enhancement functions outside the main App object for clarity ---
-// --- but they will be called by App.runEnhancements() ---
+// --- Helper Functions ---
 App.createFloatingElements = function() {
     const container = document.createElement('div');
     container.className = 'floating-elements';
@@ -400,23 +381,6 @@ App.createFloatingElements = function() {
         el.style.cssText = `width:${size}px; height:${size}px; left:${Math.random()*100}%; animation-delay:${Math.random()*25}s; animation-duration:${Math.random()*15+20}s;`;
         container.appendChild(el);
     }
-};
-
-App.animateSearchPlaceholder = function() {
-    if (!this.elements.searchInput) return;
-    const placeholders = ['Search for treasure...', 'Find a new couch...', `It's Friday afternoon in Nuremberg...`, 'Anything but work...'];
-    let i = 0, j = 0, current = '', isDeleting = false;
-    const type = () => {
-        if (!this.elements.searchInput) return;
-        current = placeholders[i];
-        if (isDeleting) { j--; } else { j++; }
-        this.elements.searchInput.placeholder = current.substring(0, j);
-        let delay = isDeleting ? 40 : 90;
-        if (!isDeleting && j === current.length) { delay = 2200; isDeleting = true; }
-        if (isDeleting && j === 0) { isDeleting = false; i = (i + 1) % placeholders.length; delay = 500; }
-        setTimeout(type, delay);
-    };
-    setTimeout(type, 1500);
 };
 
 App.addEasterEgg = function() {
@@ -455,10 +419,9 @@ App.triggerEasterEgg = function() {
     setTimeout(() => msg.remove(), 4000);
 };
 
-// This re-implementation of createRippleEffect is to be used by the App object.
 App.createRippleEffect = function(e) {
     const card = e.currentTarget;
-    if (e.target.tagName === 'IMG' || e.target.classList.contains('interested-btn')) return; // Do not trigger on image or button click
+    if (e.target.tagName === 'IMG' || e.target.classList.contains('interested-btn')) return;
     const ripple = document.createElement('span');
     const rect = card.getBoundingClientRect();
     const size = Math.max(rect.width, rect.height);

@@ -153,7 +153,8 @@ const authenticateToken = (req, res, next) => {
 // Get server configuration (public route)
 app.get('/api/config', (req, res) => {
     res.json({
-        ntfyUrl: process.env.NTFY_URL
+        ntfyUrl: process.env.NTFY_URL,
+        whatsappNumber: process.env.WHATSAPP_NUMBER
     });
 });
  

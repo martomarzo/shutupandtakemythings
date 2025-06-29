@@ -176,3 +176,111 @@ button { cursor: pointer; font-family: inherit; } button:disabled { cursor: not-
 .btn-primary:hover {
     background: #c73a3a;
 }
+
+/* Base styles for all buttons on the public site */
+.btn {
+    display: inline-block;
+    padding: 10px 20px;
+    border: none;
+    border-radius: var(--border-radius-sm);
+    font-size: 0.9rem;
+    font-weight: 600;
+    text-decoration: none;
+    transition: all 0.2s ease;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    cursor: pointer;
+}
+
+/* Red button for email/default actions */
+.btn-primary { 
+    background-color: var(--color-primary); 
+    color: white; 
+}
+.btn-primary:hover { 
+    background-color: #c73a3a; 
+}
+
+/* Green button for WhatsApp */
+.btn-success { 
+    background-color: #25D366; 
+    color: white; 
+}
+.btn-success:hover { 
+    background-color: #1DA851; 
+}
+
+/* Layout for the modal buttons */
+.contact-actions { 
+    display: flex; 
+    gap: 1rem; 
+    justify-content: flex-end; 
+    margin-top: 1rem; 
+}
+
+/* === ADD THIS TO THE END OF public.css === */
+
+/* Notification Styles */
+.notification {
+    position: fixed; /* This is crucial - it positions relative to the viewport */
+    top: 20px;
+    left: 50%;
+    transform: translate(-50%, -150%); /* Start off-screen */
+    padding: 1rem 1.25rem;
+    color: white;
+    border-radius: 8px; /* Use a specific value */
+    box-shadow: 0 10px 25px rgba(0,0,0,0.1); /* Use a specific value */
+    z-index: 9999; /* A very high value to ensure it's on top */
+    font-weight: 500;
+    transition: transform 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+    max-width: 90%;
+    text-align: center;
+}
+
+.notification.show {
+    transform: translate(-50%, 0); /* Move to final position */
+}
+
+.notification-success { background-color: #28a745; }
+.notification-error { background-color: #E54848; }
+
+/* Base styles for all buttons on the public site */
+.btn {
+    display: inline-block;
+    padding: 10px 20px;
+    border: none;
+    border-radius: 8px;
+    font-size: 0.9rem;
+    font-weight: 600;
+    text-decoration: none;
+    transition: all 0.2s ease;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    cursor: pointer;
+}
+
+/* Red button for email/default actions */
+.btn-primary { 
+    background-color: #E54848; 
+    color: white; 
+}
+.btn-primary:hover { 
+    background-color: #c73a3a; 
+}
+
+/* Green button for WhatsApp */
+.btn-success { 
+    background-color: #25D366; 
+    color: white; 
+}
+.btn-success:hover { 
+    background-color: #1DA851; 
+}
+
+/* Layout for the modal buttons */
+.contact-actions { 
+    display: flex; 
+    gap: 1rem; 
+    justify-content: flex-end; 
+    margin-top: 1rem; 
+}
