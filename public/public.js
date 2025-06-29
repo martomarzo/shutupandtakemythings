@@ -41,7 +41,7 @@ const App = {
     },
     
 
-    cacheDOMElements() {
+     cacheDOMElements() {
         // Cache all necessary elements to avoid repeated DOM queries
         this.elements = {
             header: document.querySelector('.header'),
@@ -54,6 +54,10 @@ const App = {
             imageModal: document.getElementById('imageModal'),
             modalImage: document.getElementById('modalImage'),
             closeModalBtn: document.querySelector('.close-modal'),
+            contactModal: document.getElementById('contactModal'),
+            contactForm: document.getElementById('contactForm'),
+            contactItemId: document.getElementById('contactItemId'),
+            closeContactModalBtn: document.querySelector('#contactModal .close-modal'),
         };
     },
 
@@ -74,7 +78,7 @@ const App = {
         this.bindModalEvents();
     },
 
-    bindModalEvents() {
+     bindModalEvents() {
         if (!this.elements.imageModal || !this.elements.closeModalBtn) return;
         this.elements.closeModalBtn.addEventListener('click', () => this.closeImageModal());
         this.elements.imageModal.addEventListener('click', (e) => {
@@ -85,6 +89,13 @@ const App = {
                 this.closeImageModal();
             }
         });
+
+        if (!this.elements.contactModal || !this.elements.closeContactModalBtn) return;
+        this.elements.closeContactModalBtn.addEventListener('click', () => this.closeContactModal());
+        this.elements.contactModal.addEventListener('click', (e) => {
+            if (e.target === this.elements.contactModal) this.closeContactModal();
+        });
+         this.elements.contactForm.addEventListener('submit', (e) => this.handleContactFormSubmit(e));
     },
 
     // --- DATA HANDLING & RENDERING ---
@@ -165,6 +176,9 @@ const App = {
                 ${item.description ? `<div class="item-description">${item.description}</div>` : ''}
                 ${this.formatItemSpecifications(item)}
                 <span class="item-status ${statusClass}">${item.status || 'unknown'}</span>
+                <div class="item-actions">
+                    <button class="btn btn-primary btn-sm interested-btn" data-id="${item.id}">I'm Interested</button>
+                </div>
             </div>`;
 
         // Card Interactions
@@ -176,6 +190,13 @@ const App = {
                 this.openImageModal(item.image_url);
             });
         }
+
+        const interestedBtn = card.querySelector('.interested-btn');
+        interestedBtn.addEventListener('click', (e) => {
+            e.stopPropagation();
+            this.openContactModal(item.id);
+        });
+
         return card;
     },
 
@@ -192,6 +213,59 @@ const App = {
         if (this.elements.imageModal) {
             this.elements.imageModal.classList.remove('show');
             document.body.style.overflow = 'auto';
+        }
+    },
+
+     openContactModal(itemId) {
+        if (this.elements.contactModal) {
+            this.elements.contactItemId.value = itemId;
+            this.elements.contactModal.classList.add('show');
+            document.body.style.overflow = 'hidden';
+        }
+    },
+
+    closeContactModal() {
+        if (this.elements.contactModal) {
+            this.elements.contactModal.classList.remove('show');
+            document.body.style.overflow = 'auto';
+            this.elements.contactForm.reset();
+        }
+    },
+
+      async handleContactFormSubmit(event) {
+        event.preventDefault();
+        const ntfyUrl = 'https://ntfy.sh/shutupandtakemythings'; // Placeholder URL
+        const itemId = this.elements.contactItemId.value;
+        const name = document.getElementById('contactName').value;
+        const comment = document.getElementById('contactComment').value;
+        const item = this.items.find(i => i.id == itemId);
+
+        if (!item) {
+            this.showNotification('Error: Item not found.', 'error');
+            return;
+        }
+
+        const message = `
+        New message about: ${item.name}
+        From: ${name}
+        Comment: ${comment}
+        `;
+
+        try {
+            await fetch(ntfyUrl, {
+                method: 'POST',
+                body: message,
+                headers: {
+                    'Title': `New inquiry for ${item.name}`,
+                    'Priority': 'high',
+                    'Tags': 'tada,partying_face'
+                }
+            });
+            this.closeContactModal();
+            this.showNotification('Message sent successfully!', 'success');
+        } catch (error) {
+            console.error('Error sending message:', error);
+            this.showNotification('Failed to send message. Please try again later.', 'error');
         }
     },
     
@@ -215,6 +289,20 @@ const App = {
         if (item.condition) specs.push(`<strong>Condition:</strong> ${item.condition.replace(/-/g, ' ').replace(/\b\w/g, l => l.toUpperCase())}`);
         return specs.length > 0 ? `<div class="item-specs">${specs.join('<br>')}</div>` : '';
     },
+
+    showNotification(message, type = 'info') {
+        const existing = document.querySelector('.notification');
+        if (existing) existing.remove();
+        const notification = document.createElement('div');
+        notification.className = `notification notification-${type}`;
+        notification.textContent = message;
+        document.body.appendChild(notification);
+        setTimeout(() => notification.classList.add('show'), 10);
+        setTimeout(() => {
+            notification.classList.remove('show');
+            setTimeout(() => notification.remove(), 500);
+        }, 4000);
+    },
     
     // --- ENHANCEMENTS (NON-ESSENTIAL) ---
     runEnhancements() {
@@ -229,7 +317,7 @@ const App = {
     triggerEasterEgg() { /* ... function content from previous version, styled by injected CSS ... */ },
     
     // --- STYLE INJECTION ---
-    injectStyles() {
+      injectStyles() {
         const styleSheet = document.createElement("style");
         styleSheet.id = 'app-runtime-styles';
         styleSheet.textContent = `
@@ -252,6 +340,26 @@ const App = {
                 box-shadow: 0 20px 40px rgba(0,0,0,0.3);
                 animation: bounceIn 0.5s ease;
             }
+            .notification {
+                position: fixed;
+                top: 20px;
+                left: 50%;
+                transform: translate(-50%, -150%);
+                padding: 1rem 1.25rem;
+                color: white;
+                border-radius: var(--border-radius-sm);
+                box-shadow: var(--shadow-lg);
+                z-index: 2000;
+                font-weight: 500;
+                transition: transform 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+                max-width: 320px;
+                word-wrap: break-word;
+            }
+            .notification.show {
+                transform: translate(-50%, 0);
+            }
+            .notification-success { background-color: var(--color-accent); }
+            .notification-error { background-color: var(--color-primary); }
         `;
         document.head.appendChild(styleSheet);
     }
@@ -330,7 +438,7 @@ App.triggerEasterEgg = function() {
 // This re-implementation of createRippleEffect is to be used by the App object.
 App.createRippleEffect = function(e) {
     const card = e.currentTarget;
-    if (e.target.tagName === 'IMG') return; // Do not trigger on image click
+    if (e.target.tagName === 'IMG' || e.target.classList.contains('interested-btn')) return; // Do not trigger on image or button click
     const ripple = document.createElement('span');
     const rect = card.getBoundingClientRect();
     const size = Math.max(rect.width, rect.height);

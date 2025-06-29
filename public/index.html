@@ -53,6 +53,26 @@
         <img class="modal-content" id="modalImage">
     </div>
 
+    <div id="contactModal" class="modal">
+        <div class="modal-content contact-modal-content">
+            <span class="close-modal">&times;</span>
+            <h2>I'm Interested!</h2>
+            <p>Send a message to the seller.</p>
+            <form id="contactForm">
+                <input type="hidden" id="contactItemId">
+                <div class="form-group">
+                    <label for="contactName">Your Name</label>
+                    <input type="text" id="contactName" required>
+                </div>
+                <div class="form-group">
+                    <label for="contactComment">Comment</label>
+                    <textarea id="contactComment" rows="3"></textarea>
+                </div>
+                <button type="submit" class="btn btn-primary">Send Message</button>
+            </form>
+        </div>
+    </div>
+
     <script src="public.js"></script>
 </body>
 </html>
