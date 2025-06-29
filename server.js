@@ -150,7 +150,12 @@ const authenticateToken = (req, res, next) => {
 };
 
 // ROUTES
-
+// Get server configuration (public route)
+app.get('/api/config', (req, res) => {
+    res.json({
+        ntfyUrl: process.env.NTFY_URL
+    });
+});
  
 
 // Get all items (protected route for admin)

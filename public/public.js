@@ -6,6 +6,7 @@
 const App = {
     // --- STATE ---
     items: [], // Full list of items from the server
+    config: {}, // To store config from the server, like the NTFY_URL
     elements: {}, // Cached DOM elements for performance
     searchTimeout: null, // For debouncing search input
 
@@ -19,8 +20,9 @@ const App = {
         }
     },
 
-    run() {
+    async run() {
         console.log('App is running...');
+        await this.loadConfig(); // Load config first
         this.injectStyles();
         this.cacheDOMElements();
         this.bindEventListeners();
@@ -30,13 +32,24 @@ const App = {
        if (this.elements.header) {
              // Use a short timeout to ensure the browser is ready
             setTimeout(() => {
-                this.elements.header.classList.add('is-visible'); // <-- ADD THIS LINE
+                this.elements.header.classList.add('is-visible');
             }, 100);
         }
         if (this.elements.headerLogo) {
             setTimeout(() => {
                 this.elements.headerLogo.classList.add('animate-in');
             }, 100);
+        }
+    },
+    
+    async loadConfig() {
+        try {
+            const response = await fetch('/api/config');
+            if (!response.ok) throw new Error('Could not load server configuration.');
+            this.config = await response.json();
+        } catch (error) {
+            console.error('Error loading config:', error);
+            this.showNotification(error.message, 'error');
         }
     },
     
@@ -234,7 +247,11 @@ const App = {
 
       async handleContactFormSubmit(event) {
         event.preventDefault();
-        const ntfyUrl = 'https://ntfy.sh/shutupandtakemythings'; // Placeholder URL
+        const ntfyUrl = this.config.ntfyUrl;
+        if (!ntfyUrl) {
+            this.showNotification('Configuration error. Unable to send message.', 'error');
+            return;
+        }
         const itemId = this.elements.contactItemId.value;
         const name = document.getElementById('contactName').value;
         const comment = document.getElementById('contactComment').value;
