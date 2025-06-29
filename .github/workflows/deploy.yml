@@ -17,6 +17,7 @@ jobs:
       run: |
         cd /home/marto/shutupandtakemythings # The path to your project on the server
         git pull origin main
+        npm install --production
         pm2 restart item-store
   notify:
     runs-on: ubuntu-latest
@@ -55,25 +56,25 @@ jobs:
     #     ${{ secrets.NTFY_TOPIC_URL }}
     # In your notify job
     
-    - name: Set notification message
-      id: message
-      run: |
-        # This step creates a message that can be reused below
-        if [ "${{ needs.deploy.result }}" == "success" ]; then
-          echo "title=✅ Deployment Successful" >> $GITHUB_OUTPUT
-          echo "message=Successfully deployed to ${{ github.repository }}" >> $GITHUB_OUTPUT
-        else
-          echo "title=❌ Deployment Failed" >> $GITHUB_OUTPUT
-          echo "message=Failed deployment for ${{ github.repository }}. Triggered by ${{ github.actor }}. See run: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}" >> $GITHUB_OUTPUT
-        fi
+    # - name: Set notification message
+    #   id: message
+    #   run: |
+    #     # This step creates a message that can be reused below
+    #     if [ "${{ needs.deploy.result }}" == "success" ]; then
+    #       echo "title=✅ Deployment Successful" >> $GITHUB_OUTPUT
+    #       echo "message=Successfully deployed to ${{ github.repository }}" >> $GITHUB_OUTPUT
+    #     else
+    #       echo "title=❌ Deployment Failed" >> $GITHUB_OUTPUT
+    #       echo "message=Failed deployment for ${{ github.repository }}. Triggered by ${{ github.actor }}. See run: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}" >> $GITHUB_OUTPUT
+    #     fi
 
-    - name: Send Gotify notification
-      uses: eikendev/gotify-action@0.0.3
-      with:
-        gotify_api_base: ${{ secrets.GOTIFY_SERVER_URL }}
-        gotify_app_token: ${{ secrets.GOTIFY_APP_TOKEN }}
-        notification_title: "GitHub Build Succeeded!"
-        notification_message: "A new commit by ${{ github.actor }} was pushed to the main branch."
-        notification_priority: 5
+    # - name: Send Gotify notification
+    #   uses: eikendev/gotify-action@0.0.3
+    #   with:
+    #     gotify_api_base: ${{ secrets.GOTIFY_SERVER_URL }}
+    #     gotify_app_token: ${{ secrets.GOTIFY_APP_TOKEN }}
+    #     notification_title: "GitHub Build Succeeded!"
+    #     notification_message: "A new commit by ${{ github.actor }} was pushed to the main branch."
+    #     notification_priority: 5
         
     
