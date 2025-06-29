@@ -6,6 +6,7 @@ const multer = require('multer');
 const path = require('path');
 const fs = require('fs');
 const cors = require('cors');
+const axios = require('axios'); // <-- Add this line
 require('dotenv').config();
 
 const app = express();
@@ -156,6 +157,36 @@ app.get('/api/config', (req, res) => {
         ntfyUrl: process.env.NTFY_URL,
         whatsappNumber: process.env.WHATSAPP_NUMBER
     });
+});
+
+app.post('/api/send-notification', async (req, res) => {
+    const { title, message } = req.body;
+    const { GOTIFY_URL, GOTIFY_TOKEN } = process.env;
+
+    if (!GOTIFY_URL || !GOTIFY_TOKEN) {
+        console.error('Gotify URL or Token not configured.');
+        return res.status(500).json({ error: 'Notification service is not configured.' });
+    }
+
+    if (!title || !message) {
+        return res.status(400).json({ error: 'Title and message are required.' });
+    }
+
+    try {
+        await axios.post(`${GOTIFY_URL}/message`, {
+            title: title,
+            message: message,
+            priority: 5 // Default priority
+        }, {
+            headers: {
+                'X-Gotify-Key': GOTIFY_TOKEN
+            }
+        });
+        res.status(200).json({ success: true, message: 'Notification sent successfully.' });
+    } catch (error) {
+        console.error('Error sending Gotify notification:', error.response ? error.response.data : error.message);
+        res.status(500).json({ error: 'Failed to send notification.' });
+    }
 });
  
 

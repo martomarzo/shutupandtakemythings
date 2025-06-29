@@ -283,8 +283,8 @@ const App = {
                 return;
             }
             const messageParts = [
-                `Hello! I'm interested in this item: *${item.name}*`,
-                `My name is: ${name} (${email})`
+                `Hello! My name is: ${name}. I'm interested in this item: *${item.name}*`,
+                 
             ];
             if (comment) {
                 messageParts.push(`\nMy comment: ${comment}`);
@@ -296,34 +296,37 @@ const App = {
             this.closeContactModal();
             this.showNotification('Opening WhatsApp...', 'success');
 
-        } else if (method === 'ntfy') {
-            if (!ntfyUrl) {
-                this.showNotification('Configuration error: Ntfy URL not set.', 'error');
-                return;
+        } else if (method === 'ntfy') { // This logic now sends to our backend for Gotify
+        const title = `New inquiry for ${item.name}`;
+        const message = `
+        New message about: ${item.name}
+        From: ${name}
+        Email: ${email}
+        Comment: ${comment}
+        `;
+        
+        try {
+            const response = await fetch('/api/send-notification', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({ title, message })
+            });
+
+            if (!response.ok) {
+                const errorData = await response.json();
+                throw new Error(errorData.error || 'Failed to send message.');
             }
-            const message = `
-            New message about: ${item.name}
-            From: ${name}
-            Email: ${email}
-            Comment: ${comment}
-            `;
-            try {
-                await fetch(ntfyUrl, {
-                    method: 'POST',
-                    body: message,
-                    headers: {
-                        'Title': `New inquiry for ${item.name}`,
-                        'Priority': 'high'
-                    }
-                });
-                this.closeContactModal();
-                this.showNotification('Message sent successfully!', 'success');
-            } catch (error) {
-                console.error('Error sending message:', error);
-                this.showNotification('Failed to send message. Please try again later.', 'error');
-            }
+
+            this.closeContactModal();
+            this.showNotification('Message sent successfully!', 'success');
+        } catch (error) {
+            console.error('Error sending message:', error);
+            this.showNotification(error.message, 'error');
         }
-    },
+    }
+},
     
     showErrorMessage(message) {
         this.elements.itemsGrid.innerHTML = '';
