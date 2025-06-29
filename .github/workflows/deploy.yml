@@ -68,14 +68,12 @@ jobs:
         fi
 
     - name: Send Gotify notification
-      run: |
-        curl -X POST "${{ secrets.GOTIFY_SERVER_URL }}/message" \
-        -H "Content-Type: application/json" \
-        -H "X-Gotify-Key: ${{secrets.GOTIFY_APP_TOKEN}}" \
-        -d '{
-          "title": "${{ steps.message.outputs.title }}",
-          "message": "${{ steps.message.outputs.message }}",
-          "priority": 5
-        }'
+      uses: eikendev/gotify-action@0.0.3
+      with:
+        gotify_api_base: ${{ secrets.GOTIFY_SERVER_URL }}
+        gotify_app_token: ${{ secrets.GOTIFY_APP_TOKEN }}
+        notification_title: "GitHub Build Succeeded!"
+        notification_message: "A new commit by ${{ github.actor }} was pushed to the main branch."
+        notification_priority: 5
         
     
