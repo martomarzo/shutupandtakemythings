@@ -24,20 +24,16 @@ jobs:
     if: always() 
     steps:
     - name: Send Discord notification
-      uses: rjtmahy/discord-webhook-notification@v1
+      uses: Ilshidur/action-discord@master
+      env:
+        DISCORD_WEBHOOK: ${{ secrets.DISCORD_WEBHOOK_URL }}
       with:
-        webhook_url: ${{ secrets.DISCORD_WEBHOOK_URL }}
-        # The 'needs' context gives us the result of the 'deploy' job
-        title: "Deployment to shutupandtakemythings"
-        description: "Job status: ${{ needs.deploy.result }}"
-        # Set the color based on success or failure
-        color: ${{ needs.deploy.result == 'success' && '32768' || '16711680' }} # Green for success, Red for failure
-        fields: |
-          [
-            {"name": "Repository", "value": "${{ github.repository }}", "inline": true},
-            {"name": "Triggered by", "value": "${{ github.actor }}", "inline": true},
-            {"name": "Commit", "value": "[${{ github.sha }}](${{ github.server_url }}/${{ github.repository }}/commit/${{ github.sha }})"}
-          ]
+        args: |
+          **Deployment to shutupandtakemythings**
+          Job status: ${{ needs.deploy.result }}
+          Repository: ${{ github.repository }}
+          Triggered by: ${{ github.actor }}
+          Commit: [${{ github.sha }}](${{ github.server_url }}/${{ github.repository }}/commit/${{ github.sha }})
     
     - name: Send ntfy notification on success
       if: needs.deploy.result == 'success'
