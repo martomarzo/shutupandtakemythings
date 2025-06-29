@@ -35,23 +35,46 @@ jobs:
           Triggered by: ${{ github.actor }}
           Commit: [${{ github.sha }}](${{ github.server_url }}/${{ github.repository }}/commit/${{ github.sha }})
     
-    - name: Send ntfy notification on success
-      if: needs.deploy.result == 'success'
-      run: |
-        curl -X POST \
-        -H "Title: ✅ Deployment Successful" \
-        -H "Tags: white_check_mark,rocket" \
-        -d "Successfully deployed to ${{ github.repository }}" \
-        ${{ secrets.NTFY_TOPIC_URL }}
+    # - name: Send ntfy notification on success
+    #   if: needs.deploy.result == 'success'
+    #   run: |
+    #     curl -X POST \
+    #     -H "Title: ✅ Deployment Successful" \
+    #     -H "Tags: white_check_mark,rocket" \
+    #     -d "Successfully deployed to ${{ github.repository }}" \
+    #     ${{ secrets.NTFY_TOPIC_URL }}
 
-    - name: Send ntfy notification on failure
-      if: needs.deploy.result == 'failure'
+    # - name: Send ntfy notification on failure
+    #   if: needs.deploy.result == 'failure'
+    #   run: |
+    #     curl -X POST \
+    #     -H "Title: ❌ Deployment Failed" \
+    #     -H "Prio: high" \
+    #     -H "Tags: x,warning" \
+    #     -d "Failed to deploy ${{ github.repository }}. Commit by ${{ github.actor }}. See details here: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}" \
+    #     ${{ secrets.NTFY_TOPIC_URL }}
+    # In your notify job
+    
+    - name: Set notification message
+      id: message
       run: |
-        curl -X POST \
-        -H "Title: ❌ Deployment Failed" \
-        -H "Prio: high" \
-        -H "Tags: x,warning" \
-        -d "Failed to deploy ${{ github.repository }}. Commit by ${{ github.actor }}. See details here: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}" \
-        ${{ secrets.NTFY_TOPIC_URL }}
+        # This step creates a message that can be reused below
+        if [ "${{ needs.deploy.result }}" == "success" ]; then
+          echo "title=✅ Deployment Successful" >> $GITHUB_OUTPUT
+          echo "message=Successfully deployed to ${{ github.repository }}" >> $GITHUB_OUTPUT
+        else
+          echo "title=❌ Deployment Failed" >> $GITHUB_OUTPUT
+          echo "message=Failed deployment for ${{ github.repository }}. Triggered by ${{ github.actor }}. See run: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}" >> $GITHUB_OUTPUT
+        fi
+
+    - name: Send Gotify notification
+      run: |
+        curl -X POST "${{ secrets.GOTIFY_SERVER_URL }}/message?token=${{ secrets.GOTIFY_APP_TOKEN }}" \
+        -H "Content-Type: application/json" \
+        -d '{
+          "title": "${{ steps.message.outputs.title }}",
+          "message": "${{ steps.message.outputs.message }}",
+          "priority": 5
+        }'
         
     
