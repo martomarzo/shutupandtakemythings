@@ -198,7 +198,7 @@ const App = {
             <div class="item-details">
                 <div class="item-category">${item.category || 'Uncategorized'}</div>
                 <div class="item-title">${item.name || 'No Title'}</div>
-                <div class="item-price">$${price}</div>
+                <div class="item-price">€${price}</div>
                 ${item.description ? `<div class="item-description">${item.description}</div>` : ''}
                 ${this.formatItemSpecifications(item)}
                 <span class="item-status ${statusClass}">${item.status || 'unknown'}</span>
