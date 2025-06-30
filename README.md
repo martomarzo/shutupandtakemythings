@@ -1,320 +1,145 @@
-# 🛍️ Item Sales Management System
+🛍️ Item Sales Management System
+A modern, secure web application for managing and selling personal items, featuring a beautiful public-facing storefront and a comprehensive admin panel. This system includes a database backend, a complete authentication system, and flexible user notification options via WhatsApp or Gotify.
 
-A modern, secure web application for managing and selling personal items with a beautiful UI, database backend, and complete authentication system.
+✨ Features
+🏪 Public Store
+Modern, responsive, and animated storefront for an excellent user experience.
 
-## ✨ Features
+Real-time search and filtering by category and availability.
 
-### 🔐 **Security & Authentication**
-- Secure JWT-based authentication
-- Password hashing with bcrypt
-- Protected admin routes
-- Session management
-- Password change functionality
+User Contact Options: Buyers can easily contact you via a modal with options for WhatsApp or Email (powered by Gotify).
 
-### 🏪 **Public Store**
-- Modern, animated storefront
-- Real-time search and filtering
-- Responsive design for all devices
-- Smooth animations and interactions
-- Professional item presentation
+Link Previews: Automatically generates rich social media link previews (image, title, description) when the site URL is shared.
 
-### ⚙️ **Admin Panel**
-- Complete item management (CRUD)
-- Image upload with preview
-- Structured specifications (dimensions, color, material, condition)
-- Real-time status updates
-- Advanced filtering and search
+⚙️ Admin Panel
+Complete Item Management (CRUD): Create, read, update, and delete items.
 
-### 💾 **Database Features**
-- SQLite database for reliable storage
-- Structured item specifications
-- Image file management
-- Automatic admin user creation
+Image Uploads: Includes an image preview when adding or editing items.
 
-## 🚀 Quick Setup
+Detailed Item Specifications: Fields for dimensions, color, material, condition, and more.
 
-### Prerequisites
-- Node.js (v14 or higher)
-- npm (v6 or higher)
+Real-time Status Updates: Instantly mark items as "Available" or "Sold".
 
-### Installation
+Advanced Filtering and Search: Easily find and manage your items.
 
-1. **Create project directory and save files**
-   ```bash
-   mkdir item-sales-manager
-   cd item-sales-manager
-   ```
+🔐 Security & Backend
+Secure JWT-based Authentication: Protects all admin routes.
 
-2. **Save these files in your project directory:**
-   - `server.js` - Backend server
-   - `package.json` - Dependencies
-   - `.env` - Environment variables
-   - `public/index.html` - Public store
-   - `public/admin.html` - Admin panel
-   - `public/admin-login.html` - Login page
-   - `public/styles.css` - Styles
-   - `public/public.js` - Public store functionality
-   - `public/admin.js` - Admin panel functionality
+Password Hashing: Uses bcrypt for secure password storage.
 
-3. **Install dependencies**
-   ```bash
-   npm install
-   ```
+SQLite Database: A reliable and simple file-based database for storing all item and user data.
 
-4. **Create environment file**
-   ```bash
-   cp .env.example .env
-   nano .env
-   ```
+Flexible Notifications: Configure notifications to be sent to your Gotify server for a secure, self-hosted solution.
 
-   Configure your settings:
-   ```bash
-   PORT=3000
-   JWT_SECRET=your-super-secret-jwt-key-change-this-in-production
-   ADMIN_PASSWORD=your-secure-password-here
-   DB_PATH=./items.db
-   MAX_FILE_SIZE=5242880
-   UPLOAD_PATH=./uploads
-   NODE_ENV=development
-   ```
+🚀 Quick Setup
+Prerequisites
+Node.js (v14 or higher)
 
-5. **Start the application**
-   ```bash
-   npm start
-   ```
+npm (v6 or higher)
 
-6. **Access the application**
-   - **Public Store**: http://localhost:3000
-   - **Admin Login**: http://localhost:3000/admin-login
-   - **Admin Panel**: http://localhost:3000/admin (after login)
+pm2 for process management (npm install -g pm2)
 
-## 🔑 Default Login
+Installation
+Clone or download the project files into a new directory.
 
-The system creates a default admin user on first startup:
-- **Username**: `admin`
-- **Password**: Whatever you set in `ADMIN_PASSWORD` in .env
+Bash
 
-⚠️ **Change the default password immediately after first login!**
+mkdir shutupandtakemythings
+cd shutupandtakemythings
+# (Add all project files to this directory)
+Install dependencies. This includes axios for sending notifications.
 
-## 📁 Project Structure
+Bash
 
-```
-item-sales-manager/
-├── server.js              # Node.js backend server
-├── package.json           # Dependencies and scripts
-├── .env                   # Environment variables (create this)
-├── items.db              # SQLite database (auto-created)
-├── uploads/              # Image storage (auto-created)
-└── public/               # Frontend files
-    ├── index.html        # Public store
-    ├── admin.html        # Admin panel
-    ├── admin-login.html  # Login page
-    ├── styles.css        # Shared styles
-    ├── public.js         # Public store logic
-    └── admin.js          # Admin panel logic
-```
-
-## 🛠️ Configuration
-
-### Environment Variables
-
-**Required variables in `.env`:**
-
-```bash
-# Server port
-PORT=3000
-
-# Security (CHANGE THESE!)
-JWT_SECRET=generate-a-long-random-string-here
-ADMIN_PASSWORD=your-secure-password
-
-# Database
-DB_PATH=./items.db
-
-# File uploads
-MAX_FILE_SIZE=5242880  # 5MB in bytes
-UPLOAD_PATH=./uploads
-
-# Environment
-NODE_ENV=development
-```
-
-### Adding Categories
-
-To add new item categories, edit both `admin.html` and `index.html`:
-
-```html
-<option value="yourcategory">Your Category Name</option>
-```
-
-## 📱 API Endpoints
-
-### Public Endpoints
-```
-GET  /api/items           # Get all items (with filters)
-GET  /api/items/:id       # Get single item
-```
-
-### Admin Endpoints (Protected)
-```
-POST /api/auth/login                    # Admin login
-GET  /api/admin/items                   # Get items for admin
-POST /api/admin/items                   # Create new item
-PUT  /api/admin/items/:id               # Update item
-DELETE /api/admin/items/:id             # Delete item
-PATCH /api/admin/items/:id/status       # Update item status
-POST /api/admin/change-password         # Change admin password
-```
-
-### Query Parameters for `/api/items`
-- `search` - Search in name/description
-- `category` - Filter by category
-- `status` - Filter by status (available/sold)
-
-## 🎨 Customization
-
-### Styling
-- Edit `public/styles.css` to customize colors, fonts, and layout
-- The design uses a modern gradient-based theme
-- Animations can be reduced for slower devices
-
-### Branding
-- Update titles and descriptions in HTML files
-- Replace emoji icons with your logo
-- Customize the color scheme in CSS variables
-
-### Features
-- Add new item fields by modifying the form in `admin.html`
-- Update the database schema in `server.js`
-- Modify the display logic in both frontend JS files
-
-## 🔒 Security Notes
-
-### For Production
-1. **Use strong secrets**: Generate long, random JWT secrets
-2. **Change default password**: Set a secure admin password
-3. **Use HTTPS**: Deploy with SSL certificates
-4. **Regular backups**: Backup your database regularly
-5. **Update dependencies**: Keep npm packages updated
-
-### File Upload Security
-- Only images are allowed (jpg, png, gif, webp)
-- 5MB file size limit by default
-- Files are stored locally in `uploads/` directory
-
-## 🚀 Deployment
-
-### Local Development
-```bash
-npm start              # Standard start
-npm run dev           # Development mode (if nodemon installed)
-```
-
-### Production Deployment
-
-**Heroku:**
-```bash
-# Add to package.json engines
-"engines": {
-  "node": ">=18.0.0"
-}
-
-# Deploy
-heroku create your-app-name
-git push heroku main
-```
-
-**DigitalOcean/VPS:**
-```bash
-# Use PM2 for process management
-npm install -g pm2
-pm2 start server.js --name "item-store"
-pm2 startup
-pm2 save
-```
-
-## 🐛 Troubleshooting
-
-### Common Issues
-
-**"Cannot find module 'express'"**
-```bash
-rm -rf node_modules package-lock.json
 npm install
-```
+Create and configure your environment file.
+Create a file named .env in the root of the project and add the following variables.
 
-**Items not appearing after adding**
-- Check server logs for errors
-- Verify admin authentication
-- Check browser console for JavaScript errors
+Code snippet
 
-**Images not loading**
-- Check file permissions on `uploads/` directory
-- Verify file size is under limit
-- Ensure file format is supported
+# --- General Server Settings ---
+PORT=3000
+JWT_SECRET=your-super-secret-jwt-key-change-this
+ADMIN_PASSWORD=your-secure-admin-password-here
 
-**Login redirect loop**
-- Clear browser localStorage
-- Check JWT_SECRET in .env
-- Verify admin user exists in database
+# --- Contact Options (Choose one) ---
 
-### Reset Everything
-```bash
-# Stop server
-Ctrl + C
+# Option 1: WhatsApp
+# Use your full number in international format without any '+', '00', or '-'
+# Example: 491761234567
+WHATSAPP_NUMBER=your_whatsapp_number
 
-# Remove database and uploads
-rm items.db
-rm -rf uploads
+# Option 2: Gotify Notifications (more secure)
+# The URL to your Gotify server and the Application Token
+GOTIFY_URL=https://gotify.your-domain.com
+GOTIFY_TOKEN=your-gotify-app-token
+Start the application with pm2. This will run the server in the background and ensure it restarts automatically if it crashes.
 
-# Restart server (recreates everything)
-npm start
-```
+Bash
 
-## 📊 Database Management
+pm2 start server.js --name "item-store"
+Save the process list. This is a crucial step to make the service restart automatically on server reboots.
 
-### Backup Database
-```bash
-cp items.db items.db.backup.$(date +%Y%m%d)
-```
+Bash
 
-### View Database Contents
-```bash
-sqlite3 items.db
-.tables
-SELECT * FROM items;
-SELECT * FROM admin_users;
-.quit
-```
+pm2 save
+🔑 Default Admin Login
+On the first startup, a default admin user is created with the following credentials:
 
-## 🎯 Usage Tips
+Username: admin
 
-### For Sellers
-1. Take good photos with proper lighting
-2. Write detailed descriptions
-3. Include accurate dimensions
-4. Be honest about condition
-5. Update status promptly when sold
+Password: The password you set for ADMIN_PASSWORD in your .env file.
 
-### For Buyers
-- Use search and filters to find items
-- Check all specifications carefully
-- Contact seller directly for questions
-- Items marked as "sold" are no longer available
+⚠️ It is highly recommended to change the default password immediately after your first login!
 
-## 📄 License
+🌐 Making Your Site Public with Tailscale Funnel
+If you are running this on a local server, you can use Tailscale Funnel to securely expose it to the internet.
 
-MIT License - Free to use and modify for personal and commercial projects.
+Install Tailscale on your server and authenticate it to your tailnet.
 
----
+Create a systemd service to manage the funnel and ensure it starts on boot.
+Create a new file:
 
-## 🎉 You're All Set!
+Bash
 
-Your item sales management system is ready to use! Start by:
+sudo nano /etc/systemd/system/tailscale-funnel.service
+Add the following content:
 
-1. ✅ **Logging in** at `/admin-login`
-2. ✅ **Adding your first item** in the admin panel
-3. ✅ **Viewing it** on the public store
-4. ✅ **Sharing the store URL** with potential buyers
+Ini, TOML
 
-Happy selling! 🛍️
+[Unit]
+Description=Tailscale Funnel for Sales App
+After=network-online.target tailscaled.service
+Requires=tailscaled.service
+
+[Service]
+Restart=always
+ExecStart=/usr/bin/tailscale funnel 3000
+
+[Install]
+WantedBy=multi-user.target
+Enable and start the service:
+
+Bash
+
+sudo systemctl enable tailscale-funnel.service
+sudo systemctl start tailscale-funnel.service
+Your site will now be available at https://your-machine-name.your-tailnet.ts.net.
+
+📁 Project Structure
+.
+├── server.js              # The main Node.js backend server
+├── package.json           # Project dependencies and scripts
+├── .env                   # Environment variables (you must create this)
+├── items.db               # SQLite database (auto-created)
+├── uploads/               # Directory for item images (auto-created)
+├── public/                # All frontend files
+│   ├── index.html         # The public-facing store page
+│   ├── admin.html         # The admin panel
+│   ├── admin-login.html   # The admin login page
+│   ├── public.js          # JavaScript for the public store
+│   ├── admin.js           # JavaScript for the admin panel
+│   ├── login.js           # JavaScript for the login page
+│   ├── public.css         # CSS for the public store
+│   └── admin.css          # CSS for the admin panel and login page
+└── README.md              # This documentation file
